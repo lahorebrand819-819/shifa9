@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" fill="none">
+  <!-- TELCA MARKETING VECTOR LOGO (DARK MODE OPTIMIZED) -->
+  <defs>
+    <style>
+      .white-fill { fill: #F8FAFC; }
+      .cyan-fill { fill: #00A3FF; }
+      .cyan-stroke { stroke: #00A3FF; stroke-width: 3.5; stroke-linecap: round; }
+      .subtext { font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; font-size: 24px; font-weight: 600; letter-spacing: 0.38em; fill: #F1F5F9; }
+    </style>
+  </defs>
+
+  <!-- Letter T -->
+  <g transform="translate(45, 40)">
+    <rect x="0" y="0" width="76" height="15" rx="1.5" class="white-fill" />
+    <rect x="30.5" y="15" width="15" height="75" rx="1.5" class="white-fill" />
+  </g>
+
+  <!-- Letter E -->
+  <g transform="translate(142, 40)">
+    <!-- Top White Bar -->
+    <rect x="0" y="0" width="72" height="15" rx="1.5" class="white-fill" />
+    <!-- Middle Cyan Bar -->
+    <rect x="0" y="37.5" width="72" height="15" rx="1.5" class="cyan-fill" />
+    <!-- Bottom White Bar -->
+    <rect x="0" y="75" width="72" height="15" rx="1.5" class="white-fill" />
+  </g>
+
+  <!-- Letter L -->
+  <g transform="translate(235, 40)">
+    <!-- Vertical Left Bar -->
+    <rect x="0" y="0" width="15" height="90" rx="1.5" class="white-fill" />
+    <!-- Bottom Horizontal Bar -->
+    <rect x="0" y="75" width="70" height="15" rx="1.5" class="white-fill" />
+  </g>
+
+  <!-- Letter C -->
+  <g transform="translate(325, 40)">
+    <path d="M 72 18 C 62 5, 45 0, 36 0 C 16 0, 0 20, 0 45 C 0 70, 16 90, 36 90 C 46 90, 62 85, 72 72 L 62 60 C 54 70, 44 74, 36 74 C 24 74, 15 62, 15 45 C 15 28, 24 16, 36 16 C 44 16, 54 20, 62 30 Z" class="white-fill" />
+  </g>
+
+  <!-- Letter A -->
+  <g transform="translate(425, 40)">
+    <!-- Left diagonal -->
+    <polygon points="38,0 48,0 15,90 0,90" class="white-fill" />
+    <!-- Right diagonal -->
+    <polygon points="38,0 48,0 86,90 71,90" class="white-fill" />
+    <!-- Cyan crossbar -->
+    <rect x="23" y="58" width="40" height="13" rx="1" class="cyan-fill" />
+  </g>
+
+  <!-- Subtitle: — MARKETING — -->
+  <g transform="translate(0, 165)">
+    <!-- Left line -->
+    <line x1="75" y1="12" x2="135" y2="12" class="cyan-stroke" />
+    
+    <!-- Text MARKETING -->
+    <text x="300" y="20" text-anchor="middle" class="subtext">MARKETING</text>
+    
+    <!-- Right line -->
+    <line x1="465" y1="12" x2="525" y2="12" class="cyan-stroke" />
+  </g>
+</svg>
