@@ -17,28 +17,28 @@ import {
 
 export const initialAgencyData: AgencyData = {
   settings: {
-    name: 'Telca Marketing',
+    name: 'Shifa Productions',
     tagline: 'Scale Smarter. Reach More Customers. Dominate Your Market.',
     logo: '/shifa-logo.png',
     favicon: '/shifa-logo.png',
-    contactEmail: 'telcagrow@gmail.com',
+    contactEmail: 'shifaproductions.official@gmail.com',
     phone: '+92 37062 64133',
     whatsappNumber: '923706264133',
-    whatsappMessage: "Hi Telca Marketing! I'd like to scale my business with a tailored marketing strategy.",
+    whatsappMessage: "Hi Shifa Productions! I'd like to scale my business with a tailored marketing strategy.",
     address: 'Suite 402, Executive Heights, Tech Avenue, Lahore & London',
     socialLinks: {
-      instagram: 'https://www.instagram.com/telcagrow?stkn=dDAwbXJ0cGdqNGVu',
+      instagram: 'https://www.instagram.com/shifaproductions?stkn=dDAwbXJ0cGdqNGVu',
       facebook: 'https://www.facebook.com/share/1Faaqfxihc/',
-      tiktok: 'https://tiktok.com/@telcamarketing',
+      tiktok: 'https://tiktok.com/@shifaproductions',
       linkedin: 'https://www.linkedin.com/in/uzair-younas-b28941371?utm_source=share_via&utm_content=profile&utm_medium=member_android',
-      youtube: 'https://youtube.com/@telcamarketing',
-      twitter: 'https://twitter.com/telcamarketing'
+      youtube: 'https://youtube.com/@shifaproductions',
+      twitter: 'https://twitter.com/shifaproductions'
     },
     footerText: 'Transforming ambitious brands through high-impact paid ads, organic SEO dominance, bespoke e-commerce engines, and cutting-edge AI marketing automation.',
-    copyrightText: '© 2026 Telca Marketing. All rights reserved. Built with precision for market leaders.',
+    copyrightText: '© 2026 Shifa Productions. All rights reserved. Built with precision for market leaders.',
     defaultCurrency: 'PKR',
-    seoTitle: 'Telca Marketing | #1 Performance Marketing & AI Agency',
-    seoDescription: 'Drive measurable ROI, scale paid advertising, dominate Google Search, and accelerate sales with Telca Marketing.',
+    seoTitle: 'Shifa Productions | #1 Performance Marketing & AI Agency',
+    seoDescription: 'Drive measurable ROI, scale paid advertising, dominate Google Search, and accelerate sales with Shifa Productions.',
     primaryColor: '#6366f1',
     secondaryColor: '#a855f7',
     themeMode: 'dark',
@@ -217,7 +217,7 @@ export const initialAgencyData: AgencyData = {
         { label: 'Customer Acq. Cost', value: '$22', before: '$65', after: '$22' }
       ],
       testimonial: {
-        quote: 'Telca Marketing did not just run ads for us—they revolutionized our whole sales machine. We grew faster in 8 months than in our prior 3 years combined.',
+        quote: 'Shifa Productions did not just run ads for us—they revolutionized our whole sales machine. We grew faster in 8 months than in our prior 3 years combined.',
         author: 'Elena Rostova',
         role: 'CEO & Founder, Aura Luxury'
       }
@@ -302,7 +302,7 @@ export const initialAgencyData: AgencyData = {
       company: 'Nordic Peak Outdoor',
       position: 'Managing Director',
       photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&auto=format&fit=crop&q=80',
-      review: 'Telca Marketing is the only agency we have worked with that actually treats our budget like their own. Within 90 days, our e-commerce ROAS shot up from 1.8x to 5.2x.',
+      review: 'Shifa Productions is the only agency we have worked with that actually treats our budget like their own. Within 90 days, our e-commerce ROAS shot up from 1.8x to 5.2x.',
       rating: 5,
       enabled: true,
       platform: 'Clutch 5.0'
@@ -421,7 +421,7 @@ Allocate 65% of your paid budget to Meta for predictable cash-flow conversions, 
       publishDate: '2026-08-20',
       isDraft: false,
       readTime: '6 min read',
-      seoTitle: 'Meta Ads vs TikTok Ads 2026 Comparison | Telca Marketing',
+      seoTitle: 'Meta Ads vs TikTok Ads 2026 Comparison | Shifa Productions',
       seoDescription: 'Discover whether Meta or TikTok ads deliver higher ROAS for your business in 2026 with real ad spend data.',
       tags: ['Paid Media', 'Meta Ads', 'TikTok Marketing', 'E-commerce']
     },

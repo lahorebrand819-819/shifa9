@@ -83,7 +83,7 @@ export const NewsletterSection: React.FC<NewsletterSectionProps> = ({ onOpenPoli
       aria-label="Newsletter Subscription"
       className="relative py-16 sm:py-20 bg-slate-950 border-t border-slate-900 overflow-hidden"
     >
-      {/* Ambient background glow matching Telca Marketing branding */}
+      {/* Ambient background glow matching Shifa Productions branding */}
       <div 
         aria-hidden="true" 
         className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-30"

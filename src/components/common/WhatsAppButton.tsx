@@ -1,27 +1,41 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAgency } from '../../context/AgencyContext';
 import { motion } from 'motion/react';
 
 export const WhatsAppButton: React.FC = () => {
   const { data } = useAgency();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const phone = data?.settings?.whatsappNumber || '923706264133';
   const cleanPhone = phone.replace(/[^0-9]/g, '');
-  const message = data?.settings?.whatsappMessage && !data.settings.whatsappMessage.includes('Digital Growth')
-    ? data.settings.whatsappMessage
-    : "Hi Shifa Productions! I'd like to discuss a project.";
+  const message = data?.settings?.whatsappMessage || "Hi Shifa Productions! I'd like to discuss a project.";
 
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 
-  return (
-    <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50">
+  const buttonContent = (
+    <div
+      style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        zIndex: 999999,
+        pointerEvents: 'auto',
+        transform: 'translateZ(0)' // Force dedicated compositor layer
+      }}
+      className="fixed bottom-[20px] right-[20px] z-[999999]"
+    >
       <motion.a
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
         whileHover={{ scale: 1.12 }}
         whileTap={{ scale: 0.92 }}
-        className="relative group flex items-center justify-center w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-[#25D366] hover:bg-[#20ba59] active:bg-[#1da850] text-white shadow-2xl shadow-emerald-500/40 border-2 border-white/20 transition-all duration-300 cursor-pointer"
+        className="relative group flex items-center justify-center w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#20ba59] active:bg-[#1da850] text-white shadow-2xl shadow-emerald-500/40 border-2 border-white/20 transition-all duration-300 cursor-pointer"
         aria-label="Chat with Shifa Productions on WhatsApp"
         title="Chat on WhatsApp (+92 370 6264133)"
       >
@@ -42,4 +56,11 @@ export const WhatsAppButton: React.FC = () => {
       </motion.a>
     </div>
   );
+
+  // Render via React Portal directly into document.body to prevent any parent container/overflow/transform issues
+  if (mounted && typeof document !== 'undefined') {
+    return createPortal(buttonContent, document.body);
+  }
+
+  return buttonContent;
 };

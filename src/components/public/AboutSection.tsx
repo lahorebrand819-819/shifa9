@@ -22,6 +22,7 @@ interface AboutSectionProps {
 export const AboutSection: React.FC<AboutSectionProps> = ({ isStandalonePage = false }) => {
   const { data } = useAgency();
   const team = data?.team || [];
+  const agencyName = data?.settings?.agencyName || data?.settings?.name || 'Shifa Productions';
 
   const values = [
     {
@@ -60,7 +61,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ isStandalonePage = f
           </h2>
 
           <p className="text-base text-slate-300 leading-relaxed font-normal">
-            Shifa Productions was founded on a single conviction: modern businesses deserve an agile growth partner that combines ruthless analytical rigor with world-class creative execution.
+            {agencyName} was founded on a single conviction: modern businesses deserve an agile growth partner that combines ruthless analytical rigor with world-class creative execution.
           </p>
         </div>
 

@@ -93,7 +93,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
     }
   };
 
-  const handleQuickGoogleSignIn = async (userEmail = 'lahorebrand819@gmail.com', userName = 'Agency Director') => {
+  const handleQuickGoogleSignIn = async (userEmail = 'shifaproductions.pk.@gmail.com', userName = 'Shifa Productions Owner') => {
     setIsGoogleLoading(true);
     setErrorMsg('');
     try {
@@ -122,7 +122,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           try {
-            sessionStorage.setItem('telca_auth_prompt_dismissed', 'true');
+            sessionStorage.setItem('shifa_auth_prompt_dismissed', 'true');
           } catch {}
           onClose();
         }
@@ -215,7 +215,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
           <button
             type="button"
             disabled={isGoogleLoading || isLoading}
-            onClick={() => handleQuickGoogleSignIn('lahorebrand819@gmail.com', 'Agency Director')}
+            onClick={() => handleQuickGoogleSignIn('shifaproductions.pk.@gmail.com', 'Shifa Productions Owner')}
             className="w-full py-3 px-4 rounded-xl bg-white hover:bg-slate-100 active:bg-slate-200 text-slate-900 font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50"
           >
             {isGoogleLoading ? (
@@ -226,7 +226,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
             ) : (
               <>
                 <GoogleIcon className="w-4 h-4" />
-                <span>Continue with Google</span>
+                <span>Continue with Google (shifaproductions.pk.@gmail.com)</span>
               </>
             )}
           </button>
@@ -235,14 +235,14 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
           <div className="flex items-center justify-between px-1 text-[11px] text-slate-400">
             <span className="flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>1-Click Verified Auth</span>
+              <span>Admin Owner Google Verified</span>
             </span>
             <button
               type="button"
               onClick={() => setShowGoogleChooser(!showGoogleChooser)}
               className="text-indigo-400 hover:text-indigo-300 font-medium cursor-pointer"
             >
-              {showGoogleChooser ? 'Hide Google Accounts' : 'Choose Account'}
+              {showGoogleChooser ? 'Hide Google Accounts' : 'Switch Google Account'}
             </button>
           </div>
 
@@ -256,19 +256,36 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
               <div className="text-[11px] font-semibold text-slate-300">Choose Google Account:</div>
               <button
                 type="button"
-                onClick={() => handleQuickGoogleSignIn('lahorebrand819@gmail.com', 'Agency Director')}
-                className="w-full flex items-center justify-between p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 text-left transition-colors cursor-pointer"
+                onClick={() => handleQuickGoogleSignIn('shifaproductions.pk.@gmail.com', 'Shifa Productions Owner')}
+                className="w-full flex items-center justify-between p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-amber-500/40 hover:border-amber-400 text-left transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-full bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center text-[10px] border border-amber-500/30">
                     SP
                   </div>
                   <div>
-                    <div className="font-bold text-white text-xs">lahorebrand819@gmail.com</div>
-                    <div className="text-[10px] text-amber-400">Shifa Productions Agency Admin</div>
+                    <div className="font-bold text-white text-xs">shifaproductions.pk.@gmail.com</div>
+                    <div className="text-[10px] text-amber-400 font-semibold">Primary Agency Owner / Super Admin</div>
                   </div>
                 </div>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Admin</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Owner</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickGoogleSignIn('lahorebrand819@gmail.com', 'Agency Director')}
+                className="w-full flex items-center justify-between p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500/50 text-left transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center text-[10px] border border-indigo-500/30">
+                    AD
+                  </div>
+                  <div>
+                    <div className="font-bold text-white text-xs">lahorebrand819@gmail.com</div>
+                    <div className="text-[10px] text-slate-400">Agency Director Admin</div>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Admin</span>
               </button>
 
               <button
@@ -277,7 +294,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
                 className="w-full flex items-center justify-between p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500/50 text-left transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center text-[10px] border border-indigo-500/30">
+                  <div className="w-7 h-7 rounded-full bg-slate-800 text-slate-300 font-bold flex items-center justify-center text-[10px] border border-slate-700">
                     CP
                   </div>
                   <div>
@@ -285,7 +302,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
                     <div className="text-[10px] text-slate-400">Client / Brand Portal Account</div>
                   </div>
                 </div>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Client</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Client</span>
               </button>
             </motion.div>
           )}
@@ -294,7 +311,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
           <div className="relative pt-2 pb-1 flex items-center justify-center">
             <div className="border-t border-slate-800 w-full" />
             <span className="bg-slate-900 px-3 text-[10px] text-slate-400 uppercase tracking-wider font-semibold whitespace-nowrap">
-              or continue with email
+              or sign in with username &amp; password
             </span>
             <div className="border-t border-slate-800 w-full" />
           </div>
@@ -324,7 +341,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
                     value={signInIdentifier}
                     onChange={(e) => setSignInIdentifier(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 transition-colors"
-                    placeholder="e.g. yourname@company.com or marketing"
+                    placeholder="shifaproductions.pk.@gmail.com, marketing, or admin"
                     autoComplete="username"
                   />
                 </div>
@@ -360,25 +377,25 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
                   </>
                 ) : (
                   <>
-                    <span>Sign In to Shifa Productions</span>
+                    <span>Sign In as Admin</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
 
-              {/* Quick Admin Demo Credentials fill */}
+              {/* Quick Admin Credentials fill */}
               <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 min-w-0 pr-2">
                   <ShieldCheck className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span>Admin: <strong className="text-slate-300">marketing</strong> / <strong className="text-slate-300">25802580</strong></span>
+                  <span className="truncate">Admin: <strong className="text-slate-300">shifaproductions.pk.@gmail.com</strong> / <strong className="text-slate-300">25802580</strong></span>
                 </div>
                 <button
                   type="button"
                   onClick={() => {
-                    setSignInIdentifier('marketing');
+                    setSignInIdentifier('shifaproductions.pk.@gmail.com');
                     setSignInPassword('25802580');
                   }}
-                  className="px-2 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold cursor-pointer text-[11px] transition-colors"
+                  className="px-2 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold cursor-pointer text-[11px] transition-colors shrink-0"
                 >
                   Quick Fill
                 </button>
@@ -526,7 +543,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
             type="button"
             onClick={() => {
               try {
-                sessionStorage.setItem('telca_auth_prompt_dismissed', 'true');
+                sessionStorage.setItem('shifa_auth_prompt_dismissed', 'true');
               } catch {}
               onClose();
             }}

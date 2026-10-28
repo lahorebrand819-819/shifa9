@@ -41,11 +41,11 @@ const MainContent: React.FC = () => {
 
     // Wipe any obsolete permanent storage block from previous sessions
     try {
-      localStorage.removeItem('telca_auth_prompt_dismissed');
+      localStorage.removeItem('shifa_auth_prompt_dismissed');
     } catch {}
 
     const timer = setTimeout(() => {
-      const isDismissed = sessionStorage.getItem('telca_auth_prompt_dismissed');
+      const isDismissed = sessionStorage.getItem('shifa_auth_prompt_dismissed');
       if (!isDismissed && !isAuthenticated && !isAdminView) {
         setAuthModalMode('signin');
         setShowLoginModal(true);

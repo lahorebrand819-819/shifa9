@@ -102,7 +102,7 @@ export const AdminReports: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-slate-800 print:border-slate-300">
           <div className="space-y-1">
             <div className="text-xs font-black uppercase tracking-widest text-indigo-400 print:text-indigo-600">
-              TELCA MARKETING • PERFORMANCE BRIEF
+              SHIFA PRODUCTIONS • PERFORMANCE BRIEF
             </div>
             <h2 className="text-3xl font-black text-white print:text-slate-900">
               {selectedClient}

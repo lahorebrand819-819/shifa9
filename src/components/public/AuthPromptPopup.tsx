@@ -7,7 +7,7 @@ interface AuthPromptPopupProps {
   isSuppressed?: boolean;
 }
 
-const STORAGE_KEY = 'telca_auth_prompt_dismissed';
+const STORAGE_KEY = 'shifa_auth_prompt_dismissed';
 const DELAY_MS = 15000; // 15 seconds of active browsing
 
 export const AuthPromptPopup: React.FC<AuthPromptPopupProps> = ({

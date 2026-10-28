@@ -59,7 +59,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onGetStarted, onViewWo
 
             {/* Supporting Description */}
             <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
-              We engineer high-ROI paid ad funnels, dominate Google Search with authoritative SEO, create viral social media content, and deploy custom AI automation systems for ambitious brands.
+              {settings?.tagline ||
+                'We engineer high-ROI paid ad funnels, dominate Google Search with authoritative SEO, create viral social media content, and deploy custom AI automation systems for ambitious brands.'}
             </p>
 
             {/* CTAs */}

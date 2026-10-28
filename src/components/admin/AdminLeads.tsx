@@ -136,7 +136,7 @@ export const AdminLeads: React.FC<AdminLeadsProps> = ({ onNavigateToClients }) =
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `telca_leads_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `shifa_productions_leads_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

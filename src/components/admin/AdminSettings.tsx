@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAgency } from '../../context/AgencyContext';
-import { AgencySettings } from '../../types';
+import { AgencySettings, WebsiteSettings } from '../../types';
 import { AdminPolicies } from './AdminPolicies';
 import {
   Settings,
@@ -18,7 +18,6 @@ import {
   ScrollText,
   ImageIcon
 } from 'lucide-react';
-import { TelcaLogo } from '../common/TelcaLogo';
 
 type SettingsTab = 'general' | 'policies' | 'currencies' | 'security';
 
@@ -33,9 +32,11 @@ export const AdminSettings: React.FC = () => {
     return (
       currentSettings || {
         agencyName: 'Shifa Productions',
+        name: 'Shifa Productions',
         tagline: 'Scaling High-Growth Brands Through Performance Marketing & Creative Execution',
         description: '',
-        email: 'telcagrow@gmail.com',
+        email: 'shifaproductions.official@gmail.com',
+        contactEmail: 'shifaproductions.official@gmail.com',
         phone: '+92 37062 64133',
         address: 'Executive Tower, Main Boulevard, Innovation District',
         whatsappNumber: '923706264133',
@@ -48,15 +49,50 @@ export const AdminSettings: React.FC = () => {
         defaultCurrency: 'PKR',
         socialLinks: {
           linkedin: 'https://www.linkedin.com/in/uzair-younas-b28941371?utm_source=share_via&utm_content=profile&utm_medium=member_android',
-          twitter: 'https://twitter.com/telcamarketing',
-          instagram: 'https://www.instagram.com/telcagrow?stkn=dDAwbXJ0cGdqNGVu',
+          twitter: 'https://twitter.com/shifaproductions',
+          instagram: 'https://www.instagram.com/shifaproductions',
           facebook: 'https://www.facebook.com/share/1Faaqfxihc/',
-          youtube: 'https://youtube.com/@telcamarketing'
+          youtube: 'https://youtube.com/@shifaproductions'
         },
-        footerText: '© 2026 Shifa Productions. All rights reserved.'
+        footerText: '© 2026 Shifa Productions. All rights reserved.',
+        copyrightText: '© 2026 Shifa Productions. All rights reserved. Built with precision for market leaders.',
+        logo: '/shifa-logo.png',
+        favicon: '/shifa-logo.png',
+        primaryColor: '#6366f1',
+        secondaryColor: '#a855f7',
+        themeMode: 'dark',
+        buttonStyle: 'rounded',
+        seoTitle: 'Shifa Productions | Performance Marketing & AI Agency',
+        seoDescription: 'Scale your brand with Shifa Productions.'
       }
     );
   });
+
+  // Keep form synchronized when settings are loaded or updated from context/server
+  useEffect(() => {
+    if (currentSettings) {
+      setFormData(prev => ({
+        ...prev,
+        ...currentSettings,
+        agencyName: currentSettings.agencyName || currentSettings.name || prev.agencyName,
+        name: currentSettings.name || currentSettings.agencyName || prev.name,
+        email: currentSettings.email || currentSettings.contactEmail || prev.email,
+        contactEmail: currentSettings.contactEmail || currentSettings.email || prev.contactEmail,
+        phone: currentSettings.phone || prev.phone,
+        tagline: currentSettings.tagline || prev.tagline,
+        address: currentSettings.address || prev.address,
+        logo: currentSettings.logo || prev.logo,
+        favicon: currentSettings.favicon || prev.favicon,
+        whatsappNumber: currentSettings.whatsappNumber || prev.whatsappNumber,
+        whatsappMessage: currentSettings.whatsappMessage || prev.whatsappMessage,
+        socialLinks: {
+          ...prev.socialLinks,
+          ...(currentSettings.socialLinks || {})
+        },
+        currencies: (currentSettings as any).currencies || prev.currencies
+      }));
+    }
+  }, [currentSettings]);
 
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -65,7 +101,16 @@ export const AdminSettings: React.FC = () => {
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updateSettings(formData);
+    const resolvedName = formData.agencyName || formData.name || 'Shifa Productions';
+    const resolvedEmail = formData.email || formData.contactEmail || 'shifaproductions.official@gmail.com';
+    const payload: Partial<WebsiteSettings> = {
+      ...formData,
+      name: resolvedName,
+      agencyName: resolvedName,
+      contactEmail: resolvedEmail,
+      email: resolvedEmail
+    };
+    await updateSettings(payload);
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {

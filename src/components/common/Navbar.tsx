@@ -13,7 +13,6 @@ import {
   Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { TelcaLogo } from './TelcaLogo';
 import { GoogleIcon } from './GoogleIcon';
 
 interface NavbarProps {
@@ -59,9 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     onNavigate(id);
   };
 
-  const agencyName = data?.settings?.name && !data.settings.name.includes('Digital Growth') 
-    ? data.settings.name 
-    : 'Shifa Productions';
+  const agencyName = data?.settings?.agencyName || data?.settings?.name || 'Shifa Productions';
   const logo = data?.settings?.logo;
 
   return (

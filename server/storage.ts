@@ -46,11 +46,11 @@ export function getData(): AgencyData {
 
       let changed = false;
 
-      // Ensure agency branding is updated to Telca Marketing
+      // Ensure agency branding is updated to Shifa Productions
       if (cachedData.settings) {
-        if (!cachedData.settings.name || cachedData.settings.name.includes('Digital Growth')) {
-          cachedData.settings.name = 'Telca Marketing';
-          cachedData.settings.agencyName = 'Telca Marketing';
+        if (!cachedData.settings.name || cachedData.settings.name.includes('Digital Growth') || cachedData.settings.name.includes('Telca')) {
+          cachedData.settings.name = 'Shifa Productions';
+          cachedData.settings.agencyName = 'Shifa Productions';
           changed = true;
         }
         if (!cachedData.settings.logo || cachedData.settings.logo.includes('default') || cachedData.settings.logo === '' || cachedData.settings.logo.includes('telca-logo')) {
@@ -58,30 +58,30 @@ export function getData(): AgencyData {
           cachedData.settings.favicon = '/shifa-logo.png';
           changed = true;
         }
-        if (cachedData.settings.whatsappMessage && cachedData.settings.whatsappMessage.includes('Digital Growth Agency')) {
-          cachedData.settings.whatsappMessage = "Hi Telca Marketing! I'd like to scale my business with a tailored marketing strategy.";
+        if (!cachedData.settings.whatsappMessage || cachedData.settings.whatsappMessage.includes('Digital Growth Agency') || cachedData.settings.whatsappMessage.includes('Telca')) {
+          cachedData.settings.whatsappMessage = "Hi Shifa Productions! I'd like to discuss a video production & marketing project.";
           changed = true;
         }
-        if (cachedData.settings.copyrightText && cachedData.settings.copyrightText.includes('Digital Growth Agency')) {
-          cachedData.settings.copyrightText = '© 2026 Telca Marketing. All rights reserved. Built with precision for market leaders.';
+        if (!cachedData.settings.copyrightText || cachedData.settings.copyrightText.includes('Digital Growth Agency') || cachedData.settings.copyrightText.includes('Telca')) {
+          cachedData.settings.copyrightText = '© 2026 Shifa Productions. All rights reserved. Built with precision for market leaders.';
           changed = true;
         }
       }
 
-      // Ensure all 10 core services exist
-      if (!cachedData.services || cachedData.services.length !== 10) {
+      // Ensure services exist
+      if (!cachedData.services || cachedData.services.length === 0) {
         cachedData.services = telcaServices;
         changed = true;
       }
 
-      // Ensure all 30 packages exist for the 10 services
-      if (!cachedData.pricingPackages || cachedData.pricingPackages.length !== 30) {
+      // Ensure pricing packages exist
+      if (!cachedData.pricingPackages || cachedData.pricingPackages.length === 0) {
         cachedData.pricingPackages = telcaPricingPackages;
         changed = true;
       }
 
-      // Ensure all 19 FAQs exist
-      if (!cachedData.faqs || cachedData.faqs.length < 15) {
+      // Ensure FAQs exist
+      if (!cachedData.faqs || cachedData.faqs.length === 0) {
         cachedData.faqs = telcaFaqs;
         changed = true;
       }

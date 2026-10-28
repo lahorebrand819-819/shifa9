@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useAgency } from '../../context/AgencyContext';
 import { PolicyItem } from '../../types';
 import { PolicyModal } from '../public/PolicyModal';
-import { TelcaLogo } from './TelcaLogo';
 import {
   TrendingUp,
   Mail,
@@ -31,11 +30,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin, onOpenA
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyItem | null>(null);
 
   const settings = data?.settings;
-  const agencyName = settings?.agencyName && !settings.agencyName.includes('Digital Growth')
-    ? settings.agencyName
-    : settings?.name && !settings.name.includes('Digital Growth')
-    ? settings.name
-    : 'Shifa Productions';
+  const agencyName = settings?.agencyName || settings?.name || 'Shifa Productions';
   const social = settings?.socialLinks || {};
   const publishedPolicies = data?.policies?.filter(p => p.status === 'published') || [];
 

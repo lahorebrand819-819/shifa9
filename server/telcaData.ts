@@ -1736,7 +1736,7 @@ export const telcaIntegrations: IntegrationSource[] = [
     platform: 'Google Analytics',
     status: 'connected',
     lastSync: '2026-09-03 10:45 AM',
-    accountName: 'Telca Master GA4 Property (G-772849102)',
+    accountName: 'Shifa Master GA4 Property (G-772849102)',
     autoSync: true
   },
   {
@@ -1745,7 +1745,7 @@ export const telcaIntegrations: IntegrationSource[] = [
     platform: 'Meta Ads',
     status: 'connected',
     lastSync: '2026-09-03 11:02 AM',
-    accountName: 'Telca Agency BM (act_9918237190)',
+    accountName: 'Shifa Agency BM (act_9918237190)',
     autoSync: true
   },
   {
@@ -1754,7 +1754,7 @@ export const telcaIntegrations: IntegrationSource[] = [
     platform: 'Google Ads',
     status: 'connected',
     lastSync: '2026-09-03 11:15 AM',
-    accountName: 'Telca MCC Ad Manager (883-910-2341)',
+    accountName: 'Shifa MCC Ad Manager (883-910-2341)',
     autoSync: true
   },
   {
@@ -1763,7 +1763,7 @@ export const telcaIntegrations: IntegrationSource[] = [
     platform: 'TikTok Ads',
     status: 'connected',
     lastSync: '2026-09-03 09:30 AM',
-    accountName: 'Telca TikTok Partner Center',
+    accountName: 'Shifa TikTok Partner Center',
     autoSync: true
   },
   {
@@ -1772,7 +1772,7 @@ export const telcaIntegrations: IntegrationSource[] = [
     platform: 'LinkedIn Ads',
     status: 'connected',
     lastSync: '2026-09-03 10:00 AM',
-    accountName: 'Telca B2B Agency Partner ID: 5049182',
+    accountName: 'Shifa B2B Agency Partner ID: 5049182',
     autoSync: true
   },
   {
@@ -1781,7 +1781,7 @@ export const telcaIntegrations: IntegrationSource[] = [
     platform: 'Google Search Console',
     status: 'connected',
     lastSync: '2026-09-03 08:00 AM',
-    accountName: 'telcamarketing.com Verified Domain',
+    accountName: 'shifaproductions.com Verified Domain',
     autoSync: true
   },
   {
@@ -1810,7 +1810,7 @@ export const telcaIntegrations: IntegrationSource[] = [
     lastSync: '2026-09-03 11:42 AM',
     accountName: 'Zapier / n8n Production Webhook',
     autoSync: true,
-    webhookUrl: 'https://api.telcamarketing.com/v1/webhooks/incoming-leads'
+    webhookUrl: 'https://api.shifaproductions.com/v1/webhooks/incoming-leads'
   }
 ];
 

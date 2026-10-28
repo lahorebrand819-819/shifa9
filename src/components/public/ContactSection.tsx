@@ -142,7 +142,10 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
   };
 
   const settings = data?.settings;
-  const agencyName = settings?.name || 'Shifa Productions';
+  const agencyName = settings?.agencyName || settings?.name || 'Shifa Productions';
+  const contactEmail = settings?.contactEmail || settings?.email || 'shifaproductions.official@gmail.com';
+  const phone = settings?.phone || '+92 37062 64133';
+  const address = settings?.address || 'Suite 402, Executive Heights, Tech Avenue, Lahore & London';
   const whatsappNumber = (settings?.whatsappNumber || '923706264133').replace(/[^0-9]/g, '');
   const directWhatsAppUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
     `Hi ${agencyName}, I just submitted an inquiry for ${formData.service || 'marketing services'}. Looking forward to discussing next steps!`
@@ -182,10 +185,10 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                 <div>
                   <div className="text-xs text-slate-400 font-medium">Direct Email</div>
                   <a
-                    href={`mailto:${settings?.contactEmail}`}
+                    href={`mailto:${contactEmail}`}
                     className="text-sm font-bold text-white hover:text-indigo-400 transition-colors"
                   >
-                    {settings?.contactEmail || 'growth@digitalgrowthagency.com'}
+                    {contactEmail}
                   </a>
                 </div>
               </div>
@@ -202,7 +205,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     rel="noopener noreferrer"
                     className="text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
                   >
-                    <span>{settings?.phone || '+92 300 1234567'}</span>
+                    <span>{phone}</span>
                     <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold">
                       Instant Reply
                     </span>
@@ -217,7 +220,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                 <div>
                   <div className="text-xs text-slate-400 font-medium">Global Headquarters</div>
                   <div className="text-sm font-bold text-white">
-                    {settings?.address || 'Lahore & London Tech Hubs'}
+                    {address}
                   </div>
                 </div>
               </div>

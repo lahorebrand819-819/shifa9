@@ -6,7 +6,7 @@ export const initialPolicies: PolicyItem[] = [
     title: 'Privacy Policy',
     slug: 'privacy-policy',
     category: 'privacy',
-    summary: 'Explains how Telca Marketing collects, uses, protects, and handles personal data and client marketing assets.',
+    summary: 'Explains how Shifa Productions collects, uses, protects, and handles personal data and client marketing assets.',
     effectiveDate: '2026-01-01',
     lastUpdated: '2026-09-04',
     status: 'published',
@@ -14,7 +14,7 @@ export const initialPolicies: PolicyItem[] = [
     isSystemDefault: true,
     content: `## 1. Overview & Commitment to Data Privacy
 
-At **Telca Marketing** ("we," "our," or "us"), we are dedicated to protecting your privacy and ensuring the security of any personal information or business telemetry you share with us. This Privacy Policy outlines the types of data we gather, how we process that information, with whom we share it, and the security protocols we employ to protect your confidential marketing data.
+At **Shifa Productions** ("we," "our," or "us"), we are dedicated to protecting your privacy and ensuring the security of any personal information or business telemetry you share with us. This Privacy Policy outlines the types of data we gather, how we process that information, with whom we share it, and the security protocols we employ to protect your confidential marketing data.
 
 ---
 
@@ -81,7 +81,7 @@ If you have questions, inquiries, or concerns regarding this Privacy Policy, ple
     title: 'Terms & Conditions',
     slug: 'terms-and-conditions',
     category: 'terms',
-    summary: 'Standard terms of engagement, service agreements, intellectual property ownership, and retainer obligations for Telca Marketing.',
+    summary: 'Standard terms of engagement, service agreements, intellectual property ownership, and retainer obligations for Shifa Productions.',
     effectiveDate: '2026-01-01',
     lastUpdated: '2026-09-04',
     status: 'published',
@@ -89,7 +89,7 @@ If you have questions, inquiries, or concerns regarding this Privacy Policy, ple
     isSystemDefault: true,
     content: `## 1. Acceptance of Terms
 
-By accessing our website, contracting our services, or signing a digital service agreement with **Telca Marketing**, you agree to be bound by these Terms & Conditions. If you do not accept these terms in full, you must refrain from utilizing our agency services.
+By accessing our website, contracting our services, or signing a digital service agreement with **Shifa Productions**, you agree to be bound by these Terms & Conditions. If you do not accept these terms in full, you must refrain from utilizing our agency services.
 
 ---
 
@@ -113,13 +113,13 @@ By accessing our website, contracting our services, or signing a digital service
 
 - **Client Assets:** All trademarks, product photography, logos, and proprietary data provided by the client remain the exclusive intellectual property of the client.
 - **Agency Deliverables:** Upon complete settlement of all agreed fees, the client owns full commercial rights to all final ad creatives, copy, custom graphic assets, and campaign reports developed specifically for the client.
-- **Agency Tools & Frameworks:** Proprietary tracking scripts, optimization algorithms, internal operational templates, and agency software tools remain the property of Telca Marketing.
+- **Agency Tools & Frameworks:** Proprietary tracking scripts, optimization algorithms, internal operational templates, and agency software tools remain the property of Shifa Productions.
 
 ---
 
 ## 5. Performance & Guarantees Disclaimer
 
-While Telca Marketing leverages verified performance methodologies, predictive models, and high-converting creative playbooks:
+While Shifa Productions leverages verified performance methodologies, predictive models, and high-converting creative playbooks:
 - Advertising platform algorithms, auction dynamics, third-party tracking shifts (e.g., iOS privacy updates), and external macroeconomic factors lie outside our direct control.
 - Consequently, while our contracts frequently set explicit KPI targets and performance milestones, marketing results cannot be 100% guaranteed.
 
@@ -134,7 +134,7 @@ Both parties agree to treat all business data, revenue figures, product roadmaps
 ## 7. Termination & Cancellation
 
 - **Monthly Retainers:** Either party may terminate a monthly retainer service by submitting a written notice at least 30 days in advance.
-- **Immediate Termination:** Telca Marketing reserves the right to immediately terminate services if a client engages in fraudulent advertising, policy violations on ad networks, or abusive conduct towards team members.
+- **Immediate Termination:** Shifa Productions reserves the right to immediately terminate services if a client engages in fraudulent advertising, policy violations on ad networks, or abusive conduct towards team members.
 
 ---
 
@@ -155,7 +155,7 @@ These Terms & Conditions shall be governed by and construed in accordance with t
     isSystemDefault: true,
     content: `## 1. Overview
 
-At **Telca Marketing**, we strive to build long-term, mutually beneficial partnerships with high-growth brands. Because our services involve dedicated personnel, strategic research, custom creative production, and real-time campaign execution, our refund policy reflects the committed nature of our work.
+At **Shifa Productions**, we strive to build long-term, mutually beneficial partnerships with high-growth brands. Because our services involve dedicated personnel, strategic research, custom creative production, and real-time campaign execution, our refund policy reflects the committed nature of our work.
 
 ---
 
@@ -175,7 +175,7 @@ At **Telca Marketing**, we strive to build long-term, mutually beneficial partne
 
 ## 4. Advertising Spend Paid to Platforms
 
-- All advertising spend paid directly to ad networks (such as Meta, Google Ads, TikTok, or Pinterest) is charged directly by those platforms and is strictly non-refundable by Telca Marketing.
+- All advertising spend paid directly to ad networks (such as Meta, Google Ads, TikTok, or Pinterest) is charged directly by those platforms and is strictly non-refundable by Shifa Productions.
 - The client retains full billing transparency on their respective ad network manager accounts.
 
 ---

@@ -4,13 +4,13 @@
     "tagline": "Scale Smarter. Reach More Customers. Dominate Your Market.",
     "logo": "/shifa-logo.png",
     "favicon": "/shifa-logo.png",
-    "contactEmail": "telcagrow@gmail.com",
+    "contactEmail": "shifaproductions.official@gmail.com",
     "phone": "+92 37062 64133",
-    "whatsappNumber": "92 3706264133",
-    "whatsappMessage": "Hi Shifa Productions! I'd like to scale my business with a tailored marketing strategy.",
+    "whatsappNumber": "923706264133",
+    "whatsappMessage": "Hi Shifa Productions! I would like to discuss a project.",
     "address": "Suite 402, Executive Heights, Tech Avenue, Lahore & London",
     "socialLinks": {
-      "instagram": "https://www.instagram.com/telcagrow?stkn=dDAwbXJ0cGdqNGVu",
+      "instagram": "https://www.instagram.com/shifaproductions?stkn=dDAwbXJ0cGdqNGVu",
       "facebook": "https://www.facebook.com/share/1Faaqfxihc/",
       "tiktok": "https://tiktok.com/@digitalgrowthagency",
       "linkedin": "https://www.linkedin.com/in/uzair-younas-b28941371?utm_source=share_via&utm_content=profile&utm_medium=member_android",
@@ -26,7 +26,7 @@
     "secondaryColor": "#a855f7",
     "themeMode": "dark",
     "buttonStyle": "rounded",
-    "email": "telcagrow@gmail.com",
+    "email": "shifaproductions.official@gmail.com",
     "agencyName": "Shifa Productions"
   },
   "currencies": [
@@ -2545,7 +2545,7 @@
       "platform": "Google Search Console",
       "status": "connected",
       "lastSync": "2026-09-03 08:00 AM",
-      "accountName": "telcamarketing.com Verified Domain",
+      "accountName": "shifaproductions.com Verified Domain",
       "autoSync": true
     },
     {
@@ -2574,7 +2574,7 @@
       "lastSync": "2026-09-03 11:42 AM",
       "accountName": "Zapier / n8n Production Webhook",
       "autoSync": true,
-      "webhookUrl": "https://api.telcamarketing.com/v1/webhooks/incoming-leads"
+      "webhookUrl": "https://api.shifaproductions.com/v1/webhooks/incoming-leads"
     }
   ],
   "auditLogs": [
@@ -2818,6 +2818,26 @@
     }
   ],
   "users": [
+    {
+      "id": "usr_owner_1",
+      "name": "Shifa Productions Owner",
+      "email": "shifaproductions.pk.@gmail.com",
+      "username": "shifaproductions.pk.@gmail.com",
+      "passwordHash": "25802580",
+      "company": "Shifa Productions",
+      "role": "administrator",
+      "createdAt": "2026-10-28T09:03:50.634Z"
+    },
+    {
+      "id": "usr_owner_2",
+      "name": "Shifa Productions Owner",
+      "email": "shifaproductions.pk@gmail.com",
+      "username": "shifaproductions.pk@gmail.com",
+      "passwordHash": "25802580",
+      "company": "Shifa Productions",
+      "role": "administrator",
+      "createdAt": "2026-10-28T09:03:50.634Z"
+    },
     {
       "id": "usr_g_1793095346049_edws",
       "name": "Agency Director",
