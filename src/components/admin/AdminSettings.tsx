@@ -16,13 +16,29 @@ import {
   CheckCircle2,
   AlertCircle,
   ScrollText,
-  ImageIcon
+  ImageIcon,
+  Wifi,
+  WifiOff,
+  Database,
+  Radio,
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 
 type SettingsTab = 'general' | 'policies' | 'currencies' | 'security';
 
 export const AdminSettings: React.FC = () => {
-  const { data, updateSettings, changePassword, showToast } = useAgency();
+  const {
+    data,
+    updateSettings,
+    changePassword,
+    showToast,
+    syncStatus,
+    lastSyncedAt,
+    serverVersion,
+    isSavingSettings,
+    broadcastSyncTest
+  } = useAgency();
   const currentSettings = data?.settings;
   const policiesCount = data?.policies?.length || 0;
 
@@ -135,14 +151,88 @@ export const AdminSettings: React.FC = () => {
     }
   };
 
+  const [isTestingBroadcast, setIsTestingBroadcast] = useState(false);
+
+  const handleTestBroadcast = async () => {
+    setIsTestingBroadcast(true);
+    await broadcastSyncTest();
+    setIsTestingBroadcast(false);
+  };
+
   return (
     <div className="space-y-8 max-w-6xl">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-extrabold text-white">Agency & Global Settings</h2>
-        <p className="text-xs text-slate-400">
-          Configure agency contact, client policies (Privacy Policy, Terms & Conditions, Refund, Cookies), currencies, and credentials.
-        </p>
+      {/* Header & Cross-Device Sync Status */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-extrabold text-white">Agency & Global Settings</h2>
+          <p className="text-xs text-slate-400">
+            Configure agency contact, branding, client policies, multi-currency pricing, and real-time database settings.
+          </p>
+        </div>
+
+        {/* Real-Time Cross-Device Synchronization Badge */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 shadow-sm">
+            <div className="relative flex items-center justify-center">
+              <span className={`w-2.5 h-2.5 rounded-full ${
+                syncStatus === 'connected' ? 'bg-emerald-500 animate-pulse' :
+                syncStatus === 'reconnecting' ? 'bg-amber-500 animate-ping' : 'bg-rose-500'
+              }`} />
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-bold text-white">
+                  {syncStatus === 'connected' ? 'Real-Time Sync Connected' :
+                   syncStatus === 'reconnecting' ? 'Reconnecting Live Stream...' : 'Offline Mode'}
+                </span>
+                <span className="text-[9px] uppercase px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-mono">
+                  v{serverVersion}
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-400">
+                Synced {lastSyncedAt ? lastSyncedAt.toLocaleTimeString() : 'Just now'}
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleTestBroadcast}
+            disabled={isTestingBroadcast}
+            title="Send test signal across all connected devices and browsers"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
+          >
+            {isTestingBroadcast ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Radio className="w-3.5 h-3.5 text-indigo-400" />
+            )}
+            <span>Test Sync</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Centralized Database Architecture Notification Banner */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-950/40 via-slate-900 to-slate-950 border border-indigo-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="p-2 rounded-xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 shrink-0">
+            <Database className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="font-bold text-white flex items-center gap-2">
+              <span>Centralized Persistent Database & Live SSE Streaming Active</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                Multi-Device Synchronized
+              </span>
+            </h4>
+            <p className="text-slate-400 text-[11px] mt-0.5">
+              Settings and content updates are saved to the central database and immediately broadcast to all active devices, browsers, and visitors without manual refresh.
+            </p>
+          </div>
+        </div>
+        <div className="text-[11px] text-slate-400 sm:text-right shrink-0">
+          <span className="text-slate-500">Database Engine:</span> <span className="text-slate-300 font-medium">Atomic File + Supabase Ready</span>
+        </div>
       </div>
 
       {/* Settings Navigation Tabs */}
@@ -441,10 +531,20 @@ export const AdminSettings: React.FC = () => {
         {/* Submit Global Settings */}
         <button
           type="submit"
-          className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer"
+          disabled={isSavingSettings}
+          className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer"
         >
-          <Save className="w-4 h-4" />
-          <span>Save Profile Settings</span>
+          {isSavingSettings ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving to Central Database & Syncing...</span>
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" />
+              <span>Save Profile Settings & Sync</span>
+            </>
+          )}
         </button>
       </form>
       )}
@@ -543,10 +643,20 @@ export const AdminSettings: React.FC = () => {
 
           <button
             type="submit"
-            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer"
+            disabled={isSavingSettings}
+            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer"
           >
-            <Save className="w-4 h-4" />
-            <span>Save Currency Settings</span>
+            {isSavingSettings ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Saving to Central Database & Syncing...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                <span>Save Currency Settings & Sync</span>
+              </>
+            )}
           </button>
         </form>
       )}

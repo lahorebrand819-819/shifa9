@@ -50,7 +50,7 @@ interface AdminLayoutProps {
 }
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ onExitAdmin, initialTab = 'dashboard' }) => {
-  const { logout, data } = useAgency();
+  const { logout, data, syncStatus, lastSyncedAt, serverVersion } = useAgency();
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -199,6 +199,26 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onExitAdmin, initialTa
               );
             })}
           </nav>
+        </div>
+
+        {/* Real-Time Live Sync Status */}
+        <div className="px-2.5 py-2 rounded-xl bg-slate-950/60 border border-slate-800 text-[10px] space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="text-slate-400 font-semibold">Database Live Sync</span>
+            <div className="flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full ${
+                syncStatus === 'connected' ? 'bg-emerald-500 animate-pulse' :
+                syncStatus === 'reconnecting' ? 'bg-amber-500 animate-ping' : 'bg-rose-500'
+              }`} />
+              <span className="font-bold text-slate-300">
+                {syncStatus === 'connected' ? 'Connected' : syncStatus === 'reconnecting' ? 'Syncing...' : 'Offline'}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between text-slate-500 font-mono text-[9px]">
+            <span>Version: v{serverVersion}</span>
+            <span>{lastSyncedAt ? lastSyncedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}</span>
+          </div>
         </div>
 
         {/* Bottom Actions */}

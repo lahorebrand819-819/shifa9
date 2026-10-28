@@ -3,7 +3,17 @@ import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
 import { createServer as createViteServer } from 'vite';
-import { getData, saveData } from './server/storage';
+import {
+  getData,
+  saveData,
+  initializeDatabase,
+  registerSSEClient,
+  unregisterSSEClient,
+  sendSSEHeartbeat,
+  getDatabaseDiagnostics,
+  getCurrentVersion,
+  getSanitizedPublicData
+} from './server/storage';
 import {
   AgencyData,
   ServiceItem,
@@ -77,8 +87,16 @@ const upload = multer({
 });
 
 async function startServer() {
+  // Initialize persistent centralized database (local atomic store & Supabase if configured)
+  await initializeDatabase();
+
   const app = express();
   const PORT = 3000;
+
+  // SSE Keep-Alive Heartbeat every 25 seconds
+  setInterval(() => {
+    sendSSEHeartbeat();
+  }, 25000);
 
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -90,7 +108,7 @@ async function startServer() {
   const requireAdminAuth = (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      res.status(401).json({ error: 'Unauthorized. Please login.' });
+      res.status(401).json({ error: 'Unauthorized. Please login with an administrator account.' });
       return;
     }
     const token = authHeader.split(' ')[1];
@@ -99,24 +117,73 @@ async function startServer() {
       return;
     }
 
-    // Accept valid active tokens OR recognized session tokens (surviving server reload/HMR)
-    if (ACTIVE_TOKENS.has(token) || token.startsWith('dga_auth_') || token.startsWith('dga_google_')) {
-      if (!ACTIVE_TOKENS.has(token)) {
-        ACTIVE_TOKENS.add(token);
-        if (!TOKEN_USERS.has(token)) {
-          TOKEN_USERS.set(token, {
-            username: ADMIN_USERNAME,
-            name: 'Agency Admin',
-            role: 'administrator'
-          });
-        }
+    // Verify token exists and user has administrator role
+    if (ACTIVE_TOKENS.has(token)) {
+      const user = TOKEN_USERS.get(token);
+      if (user && user.role === 'administrator') {
+        next();
+        return;
       }
+      res.status(403).json({ error: 'Access forbidden. Administrator privileges required.' });
+      return;
+    }
+
+    // Allow recognized admin session prefix for reload survival
+    if (token.startsWith('dga_auth_admin_') || token.startsWith('dga_google_admin_')) {
+      ACTIVE_TOKENS.add(token);
+      TOKEN_USERS.set(token, {
+        username: ADMIN_USERNAME,
+        name: 'Agency Admin',
+        role: 'administrator'
+      });
       next();
       return;
     }
 
     res.status(401).json({ error: 'Session expired or invalid. Please login again.' });
   };
+
+  // ==========================================
+  // REAL-TIME CROSS-DEVICE SYNCHRONIZATION (SSE)
+  // ==========================================
+  app.get('/api/sync/events', (req: Request, res: Response) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    if (typeof (res as any).flushHeaders === 'function') {
+      (res as any).flushHeaders();
+    }
+
+    const authHeader = req.headers.authorization || (req.query.token ? `Bearer ${req.query.token}` : '');
+    let isAdmin = false;
+    if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      if (token && TOKEN_USERS.has(token) && TOKEN_USERS.get(token)?.role === 'administrator') {
+        isAdmin = true;
+      }
+    }
+
+    const clientId = registerSSEClient(res, isAdmin, (req.ip || 'unknown') as string);
+
+    req.on('close', () => {
+      unregisterSSEClient(clientId);
+    });
+  });
+
+  app.get('/api/sync/version', (req: Request, res: Response) => {
+    res.json(getCurrentVersion());
+  });
+
+  app.get('/api/admin/database-status', requireAdminAuth, (req: Request, res: Response) => {
+    res.json(getDatabaseDiagnostics());
+  });
+
+  app.post('/api/admin/sync/broadcast-test', requireAdminAuth, (req: Request, res: Response) => {
+    const data = getData();
+    saveData(data, 'test-broadcast');
+    res.json({ success: true, message: 'Test broadcast dispatched to all connected devices!' });
+  });
 
   // ==========================================
   // AUTH API
@@ -145,7 +212,7 @@ async function startServer() {
       cleanPassword === '25802580';
 
     if (isMatchingAdminUsername && isMatchingAdminPassword) {
-      const token = `dga_auth_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      const token = `dga_auth_admin_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
       ACTIVE_TOKENS.add(token);
       const adminUser = {
         username: 'shifaproductions.pk.@gmail.com',
@@ -172,7 +239,7 @@ async function startServer() {
     );
 
     if (matchedUser) {
-      const token = `dga_auth_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      const token = `dga_auth_client_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
       ACTIVE_TOKENS.add(token);
       const userObj = {
         username: matchedUser.username,
@@ -329,7 +396,7 @@ async function startServer() {
       saveData(data);
     }
 
-    const token = `dga_auth_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    const token = (isAdminAccount ? `dga_google_admin_` : `dga_google_client_`) + `${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
     ACTIVE_TOKENS.add(token);
     const userPayload = {
       username: user.username,
@@ -423,21 +490,7 @@ async function startServer() {
   // ==========================================
   app.get('/api/data', (req: Request, res: Response) => {
     const data = getData();
-    // Return sanitized public data (exclude sensitive leads)
-    const publicData = {
-      settings: data.settings,
-      policies: (data.policies || []).filter(p => p.status === 'published').sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)),
-      currencies: data.currencies.filter(c => c.enabled),
-      services: data.services.filter(s => s.enabled).sort((a, b) => a.displayOrder - b.displayOrder),
-      pricingPackages: data.pricingPackages.filter(p => p.enabled).sort((a, b) => a.displayOrder - b.displayOrder),
-      portfolio: data.portfolio,
-      caseStudies: data.caseStudies,
-      team: data.team.sort((a, b) => a.displayOrder - b.displayOrder),
-      testimonials: data.testimonials.filter(t => t.enabled),
-      faqs: data.faqs.filter(f => f.enabled).sort((a, b) => a.displayOrder - b.displayOrder),
-      blog: data.blog.filter(b => !b.isDraft)
-    };
-    res.json(publicData);
+    res.json(getSanitizedPublicData(data));
   });
 
   // Public policies endpoint
@@ -647,7 +700,7 @@ async function startServer() {
     }
 
     data.settings = updatedSettings;
-    saveData(data);
+    saveData(data, 'settings');
     res.json({ success: true, settings: data.settings, currencies: data.currencies });
   });
 
@@ -656,7 +709,7 @@ async function startServer() {
     const data = getData();
     if (Array.isArray(req.body)) {
       data.currencies = req.body;
-      saveData(data);
+      saveData(data, 'currencies');
       res.json({ success: true, currencies: data.currencies });
       return;
     }

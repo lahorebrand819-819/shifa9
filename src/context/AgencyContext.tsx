@@ -60,6 +60,13 @@ interface AgencyContextType {
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
   removeToast: (id: string) => void;
 
+  // Real-Time Cross-Device Synchronization
+  syncStatus: 'connected' | 'reconnecting' | 'offline';
+  lastSyncedAt: Date | null;
+  serverVersion: number;
+  isSavingSettings: boolean;
+  broadcastSyncTest: () => Promise<boolean>;
+
   // Refresh
   refreshData: () => Promise<void>;
 
@@ -238,9 +245,15 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   });
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // Automatically persist any data updates to localStorage
+  // Cross-device synchronization state
+  const [syncStatus, setSyncStatus] = useState<'connected' | 'reconnecting' | 'offline'>('connected');
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(new Date());
+  const [serverVersion, setServerVersion] = useState<number>(1);
+  const [isSavingSettings, setIsSavingSettings] = useState<boolean>(false);
+
+  // Automatically persist latest valid data to local cache as fallback
   useEffect(() => {
-    if (data) {
+    if (data && data.settings) {
       persistAgencyData(data);
     }
   }, [data]);
@@ -257,7 +270,7 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
-  // Fetch data
+  // Fetch centralized data from persistent database
   const fetchData = useCallback(async (token?: string | null) => {
     const activeToken = token !== undefined ? token : adminToken;
     const endpoint = activeToken ? '/api/admin/data' : '/api/data';
@@ -275,7 +288,32 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         if (res.ok) {
           const jsonData = await res.json();
           if (jsonData && jsonData.settings) {
-            setData(jsonData);
+            setData(prev => {
+              // If public endpoint was queried, merge into existing structure
+              if (!activeToken && prev) {
+                return {
+                  ...prev,
+                  settings: jsonData.settings,
+                  currencies: jsonData.currencies || prev.currencies,
+                  policies: jsonData.policies || prev.policies,
+                  services: jsonData.services || prev.services,
+                  pricingPackages: jsonData.pricingPackages || prev.pricingPackages,
+                  portfolio: jsonData.portfolio || prev.portfolio,
+                  caseStudies: jsonData.caseStudies || prev.caseStudies,
+                  testimonials: jsonData.testimonials || prev.testimonials,
+                  faqs: jsonData.faqs || prev.faqs,
+                  blog: jsonData.blog || prev.blog,
+                  team: jsonData.team || prev.team
+                };
+              }
+              return jsonData;
+            });
+            if (jsonData.version) {
+              setServerVersion(jsonData.version);
+            }
+            if (jsonData.lastUpdated) {
+              setLastSyncedAt(new Date(jsonData.lastUpdated));
+            }
             setError(null);
             return;
           }
@@ -286,11 +324,145 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         }
       }
     } catch (err: any) {
-      console.warn('Backend API not reachable (running in static / local mode):', err);
+      console.warn('Backend API connection check:', err);
     } finally {
       setIsLoading(false);
     }
   }, [adminToken]);
+
+  // Set up real-time cross-device SSE sync
+  useEffect(() => {
+    let eventSource: EventSource | null = null;
+    let reconnectTimeout: any = null;
+    let isCancelled = false;
+
+    const connectSSE = () => {
+      try {
+        const sseUrl = adminToken
+          ? `/api/sync/events?token=${encodeURIComponent(adminToken)}`
+          : '/api/sync/events';
+
+        eventSource = new EventSource(sseUrl);
+
+        eventSource.onopen = () => {
+          if (isCancelled) return;
+          setSyncStatus('connected');
+        };
+
+        eventSource.addEventListener('connected', (e: MessageEvent) => {
+          if (isCancelled) return;
+          try {
+            const payload = JSON.parse(e.data);
+            if (payload.version) {
+              setServerVersion(payload.version);
+            }
+            if (payload.lastUpdated) {
+              setLastSyncedAt(new Date(payload.lastUpdated));
+            }
+            if (payload.settings) {
+              setData(prev => {
+                if (!prev) return prev;
+                return {
+                  ...prev,
+                  settings: { ...prev.settings, ...payload.settings },
+                  ...(payload.currencies ? { currencies: payload.currencies } : {}),
+                  ...(payload.policies ? { policies: payload.policies } : {})
+                };
+              });
+            }
+            setSyncStatus('connected');
+          } catch (err) {
+            console.warn('[RealTime] SSE handshake parse error:', err);
+          }
+        });
+
+        eventSource.addEventListener('sync', (e: MessageEvent) => {
+          if (isCancelled) return;
+          try {
+            const payload = JSON.parse(e.data);
+            if (payload.version) {
+              setServerVersion(payload.version);
+            }
+            setLastSyncedAt(new Date());
+            setSyncStatus('connected');
+
+            // Apply incoming real-time updates directly to state across devices
+            if (payload.data) {
+              setData(payload.data);
+            } else if (payload.settings) {
+              setData(prev => {
+                if (!prev) return prev;
+                return {
+                  ...prev,
+                  settings: { ...prev.settings, ...payload.settings },
+                  ...(payload.currencies ? { currencies: payload.currencies } : {}),
+                  ...(payload.policies ? { policies: payload.policies } : {}),
+                  ...(payload.services ? { services: payload.services } : {}),
+                  ...(payload.pricingPackages ? { pricingPackages: payload.pricingPackages } : {}),
+                  ...(payload.portfolio ? { portfolio: payload.portfolio } : {}),
+                  ...(payload.caseStudies ? { caseStudies: payload.caseStudies } : {}),
+                  ...(payload.testimonials ? { testimonials: payload.testimonials } : {}),
+                  ...(payload.faqs ? { faqs: payload.faqs } : {}),
+                  ...(payload.blog ? { blog: payload.blog } : {}),
+                  ...(payload.team ? { team: payload.team } : {})
+                };
+              });
+            }
+          } catch (err) {
+            console.warn('[RealTime] SSE event parse error:', err);
+          }
+        });
+
+        eventSource.onerror = () => {
+          if (isCancelled) return;
+          setSyncStatus('reconnecting');
+          if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+          }
+          // Retry connection after 3.5 seconds
+          reconnectTimeout = setTimeout(() => {
+            if (!isCancelled) connectSSE();
+          }, 3500);
+        };
+      } catch (err) {
+        console.warn('[RealTime] SSE connection init error:', err);
+        setSyncStatus('reconnecting');
+      }
+    };
+
+    connectSSE();
+
+    // Fallback polling every 12 seconds in case SSE is blocked by client network
+    const pollInterval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/sync/version');
+        if (res.ok) {
+          const vData = await res.json();
+          if (vData.version && vData.version > serverVersion) {
+            setServerVersion(vData.version);
+            fetchData(adminToken);
+          }
+        }
+      } catch {}
+    }, 12000);
+
+    // Re-check immediately when tab visibility returns (e.g. user unlocks phone or switches tab)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchData(adminToken);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      isCancelled = true;
+      if (eventSource) eventSource.close();
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      clearInterval(pollInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [adminToken, serverVersion, fetchData]);
 
   // Check auth on load
   useEffect(() => {
@@ -314,13 +486,11 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
               return;
             }
           } else {
-            // Netlify or static deployment: token in localStorage is valid
             setIsAuthenticated(true);
             fetchData(adminToken);
             return;
           }
         } catch (e) {
-          // Offline / static hosting fallback
           setIsAuthenticated(true);
           fetchData(adminToken);
           return;
@@ -331,6 +501,19 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
     checkAuth();
   }, [adminToken, fetchData]);
+
+  const broadcastSyncTest = async () => {
+    try {
+      const res = await authFetch('/api/admin/sync/broadcast-test', 'POST');
+      if (res && res.success) {
+        addToast('Real-time sync test signal broadcasted to all connected devices!', 'success');
+        return true;
+      }
+    } catch (err: any) {
+      addToast(err?.message || 'Sync test failed', 'error');
+    }
+    return false;
+  };
 
   const setCurrency = useCallback((code: CurrencyCode) => {
     setCurrentCurrencyState(code);
@@ -763,49 +946,58 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   };
 
   const saveSettings = async (settings: Partial<WebsiteSettings>) => {
-    const res = await authFetch('/api/admin/settings', 'PUT', settings);
-    const updatedSettings: WebsiteSettings = (res && res.settings) ? res.settings : {
-      ...(data?.settings || {
-        name: 'Shifa Productions',
-        agencyName: 'Shifa Productions',
-        contactEmail: 'shifaproductions.official@gmail.com',
-        email: 'shifaproductions.official@gmail.com',
-        tagline: 'Scaling High-Growth Brands Through Performance Marketing & Creative Execution',
-        logo: '/shifa-logo.png',
-        favicon: '/shifa-logo.png',
-        phone: '+92 37062 64133',
-        whatsappNumber: '923706264133',
-        whatsappMessage: "Hi Shifa Productions! I'd like to discuss a project.",
-        address: 'Suite 402, Executive Heights, Tech Avenue, Lahore & London',
-        socialLinks: {},
-        footerText: 'Transforming ambitious brands through high-impact marketing.',
-        copyrightText: '© 2026 Shifa Productions. All rights reserved.',
-        defaultCurrency: 'PKR',
-        seoTitle: 'Shifa Productions',
-        seoDescription: 'Shifa Productions Marketing Agency',
-        primaryColor: '#6366f1',
-        secondaryColor: '#a855f7',
-        themeMode: 'dark',
-        buttonStyle: 'rounded'
-      }),
-      ...settings,
-      name: settings.agencyName || settings.name || data?.settings?.name || 'Shifa Productions',
-      agencyName: settings.agencyName || settings.name || data?.settings?.agencyName || 'Shifa Productions',
-      contactEmail: settings.email || settings.contactEmail || data?.settings?.contactEmail || 'shifaproductions.official@gmail.com',
-      email: settings.email || settings.contactEmail || data?.settings?.email || 'shifaproductions.official@gmail.com'
-    };
-
-    setData(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        settings: updatedSettings,
-        ...(res && res.currencies ? { currencies: res.currencies } : {})
+    try {
+      setIsSavingSettings(true);
+      const res = await authFetch('/api/admin/settings', 'PUT', settings);
+      const updatedSettings: WebsiteSettings = (res && res.settings) ? res.settings : {
+        ...(data?.settings || {
+          name: 'Shifa Productions',
+          agencyName: 'Shifa Productions',
+          contactEmail: 'shifaproductions.official@gmail.com',
+          email: 'shifaproductions.official@gmail.com',
+          tagline: 'Scaling High-Growth Brands Through Performance Marketing & Creative Execution',
+          logo: '/shifa-logo.png',
+          favicon: '/shifa-logo.png',
+          phone: '+92 37062 64133',
+          whatsappNumber: '923706264133',
+          whatsappMessage: "Hi Shifa Productions! I'd like to discuss a project.",
+          address: 'Suite 402, Executive Heights, Tech Avenue, Lahore & London',
+          socialLinks: {},
+          footerText: 'Transforming ambitious brands through high-impact marketing.',
+          copyrightText: '© 2026 Shifa Productions. All rights reserved.',
+          defaultCurrency: 'PKR',
+          seoTitle: 'Shifa Productions',
+          seoDescription: 'Shifa Productions Marketing Agency',
+          primaryColor: '#6366f1',
+          secondaryColor: '#a855f7',
+          themeMode: 'dark',
+          buttonStyle: 'rounded'
+        }),
+        ...settings,
+        name: settings.agencyName || settings.name || data?.settings?.name || 'Shifa Productions',
+        agencyName: settings.agencyName || settings.name || data?.settings?.agencyName || 'Shifa Productions',
+        contactEmail: settings.email || settings.contactEmail || data?.settings?.contactEmail || 'shifaproductions.official@gmail.com',
+        email: settings.email || settings.contactEmail || data?.settings?.email || 'shifaproductions.official@gmail.com'
       };
-    });
 
-    addToast('Website settings saved successfully!', 'success');
-    return true;
+      setData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          settings: updatedSettings,
+          ...(res && res.currencies ? { currencies: res.currencies } : {})
+        };
+      });
+
+      setLastSyncedAt(new Date());
+      addToast('Settings saved to database & synchronized across all devices in real-time!', 'success');
+      return true;
+    } catch (err: any) {
+      addToast(err?.message || 'Failed to save settings. Please try again.', 'error');
+      return false;
+    } finally {
+      setIsSavingSettings(false);
+    }
   };
 
   const saveCurrencies = async (currencies: CurrencyConfig[]) => {
@@ -1577,6 +1769,11 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         addToast,
         showToast: addToast,
         removeToast,
+        syncStatus,
+        lastSyncedAt,
+        serverVersion,
+        isSavingSettings,
+        broadcastSyncTest,
         refreshData: () => fetchData(adminToken),
         uploadMediaFile,
         saveSettings,
