@@ -45,68 +45,83 @@ export const AdminSettings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
 
   const [formData, setFormData] = useState<AgencySettings>(() => {
-    return (
-      currentSettings || {
-        agencyName: 'Shifa Productions',
-        name: 'Shifa Productions',
-        tagline: 'Scaling High-Growth Brands Through Performance Marketing & Creative Execution',
-        description: '',
-        email: 'shifaproductions.official@gmail.com',
-        contactEmail: 'shifaproductions.official@gmail.com',
-        phone: '+92 37062 64133',
-        address: 'Executive Tower, Main Boulevard, Innovation District',
-        whatsappNumber: '923706264133',
-        whatsappMessage: 'Hi Shifa Productions, I want to discuss a video production & marketing project. Let’s talk strategy!',
-        currencies: {
+    return {
+      agencyName: currentSettings?.agencyName || currentSettings?.name || 'Shifa Productions',
+      name: currentSettings?.name || currentSettings?.agencyName || 'Shifa Productions',
+      tagline: currentSettings?.tagline || 'Scaling High-Growth Brands Through Performance Marketing & Creative Execution',
+      description: currentSettings?.description || '',
+      email: currentSettings?.email || currentSettings?.contactEmail || 'shifaproductions.official@gmail.com',
+      contactEmail: currentSettings?.contactEmail || currentSettings?.email || 'shifaproductions.official@gmail.com',
+      phone: currentSettings?.phone || '+92 37062 64133',
+      address: currentSettings?.address || 'Suite 402, Executive Heights, Tech Avenue, Lahore & London',
+      whatsappNumber: currentSettings?.whatsappNumber || '923706264133',
+      whatsappMessage: currentSettings?.whatsappMessage || "Hi Shifa Productions! I'd like to discuss a project.",
+      currencies: (currentSettings as any)?.currencies || {
+        PKR: { enabled: true, symbol: 'Rs.', name: 'Pakistani Rupee' },
+        USD: { enabled: true, symbol: '$', name: 'US Dollar' },
+        GBP: { enabled: true, symbol: '£', name: 'British Pound' }
+      },
+      defaultCurrency: currentSettings?.defaultCurrency || 'PKR',
+      socialLinks: {
+        linkedin: currentSettings?.socialLinks?.linkedin || '',
+        twitter: currentSettings?.socialLinks?.twitter || '',
+        instagram: currentSettings?.socialLinks?.instagram || '',
+        facebook: currentSettings?.socialLinks?.facebook || '',
+        youtube: currentSettings?.socialLinks?.youtube || '',
+        tiktok: currentSettings?.socialLinks?.tiktok || ''
+      },
+      footerText: currentSettings?.footerText || 'Transforming ambitious brands through high-impact marketing.',
+      copyrightText: currentSettings?.copyrightText || '© 2026 Shifa Productions. All rights reserved. Built with precision for market leaders.',
+      logo: currentSettings?.logo || '/shifa-logo.png',
+      favicon: currentSettings?.favicon || '/shifa-logo.png',
+      primaryColor: currentSettings?.primaryColor || '#6366f1',
+      secondaryColor: currentSettings?.secondaryColor || '#a855f7',
+      themeMode: currentSettings?.themeMode || 'dark',
+      buttonStyle: currentSettings?.buttonStyle || 'rounded',
+      seoTitle: currentSettings?.seoTitle || 'Shifa Productions | Performance Marketing & AI Agency',
+      seoDescription: currentSettings?.seoDescription || 'Scale your brand with Shifa Productions.'
+    };
+  });
+
+  // Keep form synchronized when settings are loaded or updated in real-time from server
+  useEffect(() => {
+    if (currentSettings) {
+      setFormData({
+        agencyName: currentSettings.agencyName || currentSettings.name || 'Shifa Productions',
+        name: currentSettings.name || currentSettings.agencyName || 'Shifa Productions',
+        email: currentSettings.email || currentSettings.contactEmail || 'shifaproductions.official@gmail.com',
+        contactEmail: currentSettings.contactEmail || currentSettings.email || 'shifaproductions.official@gmail.com',
+        phone: currentSettings.phone ?? '+92 37062 64133',
+        tagline: currentSettings.tagline ?? '',
+        description: currentSettings.description ?? '',
+        address: currentSettings.address ?? '',
+        logo: currentSettings.logo || '/shifa-logo.png',
+        favicon: currentSettings.favicon || '/shifa-logo.png',
+        whatsappNumber: currentSettings.whatsappNumber !== undefined ? currentSettings.whatsappNumber : '923706264133',
+        whatsappMessage: currentSettings.whatsappMessage !== undefined ? currentSettings.whatsappMessage : "Hi Shifa Productions! I'd like to discuss a project.",
+        currencies: (currentSettings as any).currencies || {
           PKR: { enabled: true, symbol: 'Rs.', name: 'Pakistani Rupee' },
           USD: { enabled: true, symbol: '$', name: 'US Dollar' },
           GBP: { enabled: true, symbol: '£', name: 'British Pound' }
         },
-        defaultCurrency: 'PKR',
+        defaultCurrency: currentSettings.defaultCurrency || 'PKR',
         socialLinks: {
-          linkedin: 'https://www.linkedin.com/in/uzair-younas-b28941371?utm_source=share_via&utm_content=profile&utm_medium=member_android',
-          twitter: 'https://twitter.com/shifaproductions',
-          instagram: 'https://www.instagram.com/shifaproductions',
-          facebook: 'https://www.facebook.com/share/1Faaqfxihc/',
-          youtube: 'https://youtube.com/@shifaproductions'
+          linkedin: currentSettings.socialLinks?.linkedin ?? '',
+          twitter: currentSettings.socialLinks?.twitter ?? '',
+          instagram: currentSettings.socialLinks?.instagram ?? '',
+          facebook: currentSettings.socialLinks?.facebook ?? '',
+          youtube: currentSettings.socialLinks?.youtube ?? '',
+          tiktok: currentSettings.socialLinks?.tiktok ?? ''
         },
-        footerText: '© 2026 Shifa Productions. All rights reserved.',
-        copyrightText: '© 2026 Shifa Productions. All rights reserved. Built with precision for market leaders.',
-        logo: '/shifa-logo.png',
-        favicon: '/shifa-logo.png',
-        primaryColor: '#6366f1',
-        secondaryColor: '#a855f7',
-        themeMode: 'dark',
-        buttonStyle: 'rounded',
-        seoTitle: 'Shifa Productions | Performance Marketing & AI Agency',
-        seoDescription: 'Scale your brand with Shifa Productions.'
-      }
-    );
-  });
-
-  // Keep form synchronized when settings are loaded or updated from context/server
-  useEffect(() => {
-    if (currentSettings) {
-      setFormData(prev => ({
-        ...prev,
-        ...currentSettings,
-        agencyName: currentSettings.agencyName || currentSettings.name || prev.agencyName,
-        name: currentSettings.name || currentSettings.agencyName || prev.name,
-        email: currentSettings.email || currentSettings.contactEmail || prev.email,
-        contactEmail: currentSettings.contactEmail || currentSettings.email || prev.contactEmail,
-        phone: currentSettings.phone || prev.phone,
-        tagline: currentSettings.tagline || prev.tagline,
-        address: currentSettings.address || prev.address,
-        logo: currentSettings.logo || prev.logo,
-        favicon: currentSettings.favicon || prev.favicon,
-        whatsappNumber: currentSettings.whatsappNumber || prev.whatsappNumber,
-        whatsappMessage: currentSettings.whatsappMessage || prev.whatsappMessage,
-        socialLinks: {
-          ...prev.socialLinks,
-          ...(currentSettings.socialLinks || {})
-        },
-        currencies: (currentSettings as any).currencies || prev.currencies
-      }));
+        footerText: currentSettings.footerText ?? '',
+        copyrightText: currentSettings.copyrightText ?? '',
+        primaryColor: currentSettings.primaryColor || '#6366f1',
+        secondaryColor: currentSettings.secondaryColor || '#a855f7',
+        themeMode: currentSettings.themeMode || 'dark',
+        buttonStyle: currentSettings.buttonStyle || 'rounded',
+        seoTitle: currentSettings.seoTitle ?? '',
+        seoDescription: currentSettings.seoDescription ?? ''
+      });
     }
   }, [currentSettings]);
 
@@ -438,7 +453,7 @@ export const AdminSettings: React.FC = () => {
                 type="text"
                 required
                 placeholder="923001234567"
-                value={formData.whatsappNumber}
+                value={formData.whatsappNumber || ''}
                 onChange={(e) => setFormData({ ...formData, whatsappNumber: e.target.value })}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white"
               />
@@ -450,7 +465,7 @@ export const AdminSettings: React.FC = () => {
               </label>
               <input
                 type="text"
-                value={formData.whatsappMessage}
+                value={formData.whatsappMessage || ''}
                 onChange={(e) => setFormData({ ...formData, whatsappMessage: e.target.value })}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white"
               />
@@ -470,14 +485,15 @@ export const AdminSettings: React.FC = () => {
               <label className="block text-xs font-semibold text-slate-300 mb-1">LinkedIn Profile</label>
               <input
                 type="text"
-                value={formData.socialLinks.linkedin}
+                value={formData.socialLinks?.linkedin || ''}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    socialLinks: { ...formData.socialLinks, linkedin: e.target.value }
+                    socialLinks: { ...(formData.socialLinks || {}), linkedin: e.target.value }
                   })
                 }
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white"
+                placeholder="https://linkedin.com/company/yourbrand"
               />
             </div>
 
@@ -485,14 +501,15 @@ export const AdminSettings: React.FC = () => {
               <label className="block text-xs font-semibold text-slate-300 mb-1">Twitter / X</label>
               <input
                 type="text"
-                value={formData.socialLinks.twitter}
+                value={formData.socialLinks?.twitter || ''}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    socialLinks: { ...formData.socialLinks, twitter: e.target.value }
+                    socialLinks: { ...(formData.socialLinks || {}), twitter: e.target.value }
                   })
                 }
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white"
+                placeholder="https://twitter.com/yourbrand"
               />
             </div>
 
@@ -500,14 +517,15 @@ export const AdminSettings: React.FC = () => {
               <label className="block text-xs font-semibold text-slate-300 mb-1">Instagram</label>
               <input
                 type="text"
-                value={formData.socialLinks.instagram}
+                value={formData.socialLinks?.instagram || ''}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    socialLinks: { ...formData.socialLinks, instagram: e.target.value }
+                    socialLinks: { ...(formData.socialLinks || {}), instagram: e.target.value }
                   })
                 }
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white"
+                placeholder="https://instagram.com/yourbrand"
               />
             </div>
 
@@ -515,14 +533,15 @@ export const AdminSettings: React.FC = () => {
               <label className="block text-xs font-semibold text-slate-300 mb-1">Facebook</label>
               <input
                 type="text"
-                value={formData.socialLinks.facebook}
+                value={formData.socialLinks?.facebook || ''}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    socialLinks: { ...formData.socialLinks, facebook: e.target.value }
+                    socialLinks: { ...(formData.socialLinks || {}), facebook: e.target.value }
                   })
                 }
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white"
+                placeholder="https://facebook.com/yourbrand"
               />
             </div>
           </div>

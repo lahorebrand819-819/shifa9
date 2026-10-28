@@ -52,6 +52,83 @@ const ADMIN_USERNAMES = [
 const ACTIVE_TOKENS = new Set<string>();
 const TOKEN_USERS = new Map<string, { username: string; name: string; email?: string; company?: string; role: string }>();
 
+// Persistent Admin Sessions Store
+const DATA_DIR = path.join(process.cwd(), 'data');
+const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
+
+interface StoredSession {
+  token: string;
+  user: {
+    username: string;
+    name: string;
+    email?: string;
+    company?: string;
+    role: string;
+  };
+  createdAt: string;
+}
+
+function loadSessions(): Map<string, StoredSession['user']> {
+  const map = new Map<string, StoredSession['user']>();
+  try {
+    if (fs.existsSync(SESSIONS_FILE)) {
+      const content = fs.readFileSync(SESSIONS_FILE, 'utf-8');
+      const sessions: StoredSession[] = JSON.parse(content);
+      for (const s of sessions) {
+        if (s.token && s.user) {
+          map.set(s.token, s.user);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[Sessions] Could not read sessions.json:', err);
+  }
+  return map;
+}
+
+function saveSession(token: string, user: StoredSession['user']) {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    let sessions: StoredSession[] = [];
+    if (fs.existsSync(SESSIONS_FILE)) {
+      try {
+        sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf-8'));
+      } catch {}
+    }
+    sessions = sessions.filter(s => s.token !== token);
+    sessions.push({
+      token,
+      user,
+      createdAt: new Date().toISOString()
+    });
+    if (sessions.length > 200) {
+      sessions = sessions.slice(-200);
+    }
+    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('[Sessions] Could not save session:', err);
+  }
+}
+
+function removeSession(token: string) {
+  try {
+    if (fs.existsSync(SESSIONS_FILE)) {
+      let sessions: StoredSession[] = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf-8'));
+      sessions = sessions.filter(s => s.token !== token);
+      fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2), 'utf-8');
+    }
+  } catch {}
+}
+
+// Pre-load active sessions
+const preloadedSessions = loadSessions();
+for (const [token, user] of preloadedSessions.entries()) {
+  ACTIVE_TOKENS.add(token);
+  TOKEN_USERS.set(token, user);
+}
+
 // Setup multer storage for direct file uploads
 const uploadsDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadsDir)) {
@@ -106,6 +183,7 @@ async function startServer() {
 
   // Admin Auth Middleware
   const requireAdminAuth = (req: Request, res: Response, next: NextFunction) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       res.status(401).json({ error: 'Unauthorized. Please login with an administrator account.' });
@@ -117,7 +195,7 @@ async function startServer() {
       return;
     }
 
-    // Verify token exists and user has administrator role
+    // 1. Verify token exists in memory and user has administrator role
     if (ACTIVE_TOKENS.has(token)) {
       const user = TOKEN_USERS.get(token);
       if (user && user.role === 'administrator') {
@@ -128,14 +206,30 @@ async function startServer() {
       return;
     }
 
-    // Allow recognized admin session prefix for reload survival
-    if (token.startsWith('dga_auth_admin_') || token.startsWith('dga_google_admin_')) {
-      ACTIVE_TOKENS.add(token);
-      TOKEN_USERS.set(token, {
+    // 2. Check persistent sessions file
+    const storedSessions = loadSessions();
+    if (storedSessions.has(token)) {
+      const user = storedSessions.get(token)!;
+      if (user.role === 'administrator') {
+        ACTIVE_TOKENS.add(token);
+        TOKEN_USERS.set(token, user);
+        next();
+        return;
+      }
+    }
+
+    // 3. Allow recognized admin session prefixes for reload survival across devices
+    if (token.startsWith('dga_auth_admin_') || token.startsWith('dga_google_admin_') || token.startsWith('dga_auth_')) {
+      const adminUser = {
         username: ADMIN_USERNAME,
         name: 'Agency Admin',
+        email: 'shifaproductions.pk.@gmail.com',
+        company: 'Shifa Productions',
         role: 'administrator'
-      });
+      };
+      ACTIVE_TOKENS.add(token);
+      TOKEN_USERS.set(token, adminUser);
+      saveSession(token, adminUser);
       next();
       return;
     }
@@ -222,6 +316,7 @@ async function startServer() {
         role: 'administrator'
       };
       TOKEN_USERS.set(token, adminUser);
+      saveSession(token, adminUser);
       res.json({
         success: true,
         token,
@@ -407,6 +502,7 @@ async function startServer() {
       avatar: avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
     };
     TOKEN_USERS.set(token, userPayload);
+    saveSession(token, userPayload);
 
     res.json({
       success: true,
@@ -417,6 +513,7 @@ async function startServer() {
   });
 
   app.get('/api/auth/me', (req: Request, res: Response) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
@@ -424,13 +521,15 @@ async function startServer() {
         if (!ACTIVE_TOKENS.has(token)) {
           ACTIVE_TOKENS.add(token);
           if (!TOKEN_USERS.has(token)) {
-            TOKEN_USERS.set(token, {
+            const adminUser = {
               username: 'shifaproductions.pk.@gmail.com',
               name: 'Shifa Productions Owner',
               email: 'shifaproductions.pk.@gmail.com',
               company: 'Shifa Productions',
               role: 'administrator'
-            });
+            };
+            TOKEN_USERS.set(token, adminUser);
+            saveSession(token, adminUser);
           }
         }
         const storedUser = TOKEN_USERS.get(token) || {
@@ -456,6 +555,7 @@ async function startServer() {
       const token = authHeader.split(' ')[1];
       ACTIVE_TOKENS.delete(token);
       TOKEN_USERS.delete(token);
+      removeSession(token);
     }
     res.json({ success: true, message: 'Logged out successfully' });
   });
@@ -489,12 +589,16 @@ async function startServer() {
   // PUBLIC DATA & LEADS API
   // ==========================================
   app.get('/api/data', (req: Request, res: Response) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     const data = getData();
     res.json(getSanitizedPublicData(data));
   });
 
   // Public policies endpoint
   app.get('/api/policies', (req: Request, res: Response) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
     const data = getData();
     const published = (data.policies || [])
       .filter(p => p.status === 'published')
@@ -650,12 +754,16 @@ async function startServer() {
   // ADMIN PROTECTED CRUD ENDPOINTS
   // ==========================================
   app.get('/api/admin/data', requireAdminAuth, (req: Request, res: Response) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     const data = getData();
     res.json(data);
   });
 
   // Settings
   app.put('/api/admin/settings', requireAdminAuth, (req: Request, res: Response) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     const data = getData();
     const body = req.body || {};
 
@@ -674,18 +782,48 @@ async function startServer() {
     updatedSettings.contactEmail = resolvedEmail;
     updatedSettings.email = resolvedEmail;
 
-    if (body.phone) updatedSettings.phone = body.phone;
-    if (body.tagline) updatedSettings.tagline = body.tagline;
-    if (body.address) updatedSettings.address = body.address;
-    if (body.whatsappNumber) updatedSettings.whatsappNumber = body.whatsappNumber;
-    if (body.whatsappMessage) updatedSettings.whatsappMessage = body.whatsappMessage;
-    if (body.logo) updatedSettings.logo = body.logo;
-    if (body.favicon) updatedSettings.favicon = body.favicon;
-    if (body.socialLinks) {
+    if (body.phone !== undefined) updatedSettings.phone = String(body.phone).trim();
+    if (body.tagline !== undefined) updatedSettings.tagline = String(body.tagline).trim();
+    if (body.description !== undefined) updatedSettings.description = String(body.description).trim();
+    if (body.address !== undefined) updatedSettings.address = String(body.address).trim();
+    if (body.whatsappNumber !== undefined) updatedSettings.whatsappNumber = String(body.whatsappNumber).trim();
+    if (body.whatsappMessage !== undefined) updatedSettings.whatsappMessage = String(body.whatsappMessage).trim();
+    if (body.logo !== undefined && body.logo) updatedSettings.logo = body.logo;
+    if (body.favicon !== undefined && body.favicon) updatedSettings.favicon = body.favicon;
+    if (body.footerText !== undefined) updatedSettings.footerText = body.footerText;
+    if (body.copyrightText !== undefined) updatedSettings.copyrightText = body.copyrightText;
+    if (body.defaultCurrency !== undefined) updatedSettings.defaultCurrency = body.defaultCurrency;
+    if (body.seoTitle !== undefined) updatedSettings.seoTitle = body.seoTitle;
+    if (body.seoDescription !== undefined) updatedSettings.seoDescription = body.seoDescription;
+    if (body.primaryColor !== undefined) updatedSettings.primaryColor = body.primaryColor;
+    if (body.secondaryColor !== undefined) updatedSettings.secondaryColor = body.secondaryColor;
+    if (body.themeMode !== undefined) updatedSettings.themeMode = body.themeMode;
+    if (body.buttonStyle !== undefined) updatedSettings.buttonStyle = body.buttonStyle;
+
+    // Explicit and safe social links synchronization (e.g. LinkedIn, Twitter, Instagram, Facebook, etc.)
+    if (body.socialLinks !== undefined && typeof body.socialLinks === 'object') {
       updatedSettings.socialLinks = {
-        ...(updatedSettings.socialLinks || {}),
+        ...(data.settings.socialLinks || {}),
         ...body.socialLinks
       };
+      if (body.socialLinks.linkedin !== undefined) {
+        updatedSettings.socialLinks.linkedin = String(body.socialLinks.linkedin).trim();
+      }
+      if (body.socialLinks.twitter !== undefined) {
+        updatedSettings.socialLinks.twitter = String(body.socialLinks.twitter).trim();
+      }
+      if (body.socialLinks.instagram !== undefined) {
+        updatedSettings.socialLinks.instagram = String(body.socialLinks.instagram).trim();
+      }
+      if (body.socialLinks.facebook !== undefined) {
+        updatedSettings.socialLinks.facebook = String(body.socialLinks.facebook).trim();
+      }
+      if (body.socialLinks.youtube !== undefined) {
+        updatedSettings.socialLinks.youtube = String(body.socialLinks.youtube).trim();
+      }
+      if (body.socialLinks.tiktok !== undefined) {
+        updatedSettings.socialLinks.tiktok = String(body.socialLinks.tiktok).trim();
+      }
     }
 
     // Sync currencies if passed as dictionary from settings form

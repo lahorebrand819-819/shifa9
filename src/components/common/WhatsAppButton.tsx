@@ -36,8 +36,8 @@ export const WhatsAppButton: React.FC = () => {
         whileHover={{ scale: 1.12 }}
         whileTap={{ scale: 0.92 }}
         className="relative group flex items-center justify-center w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#20ba59] active:bg-[#1da850] text-white shadow-2xl shadow-emerald-500/40 border-2 border-white/20 transition-all duration-300 cursor-pointer"
-        aria-label="Chat with Shifa Productions on WhatsApp"
-        title="Chat on WhatsApp (+92 370 6264133)"
+        aria-label={`Chat with ${data?.settings?.agencyName || data?.settings?.name || 'Shifa Productions'} on WhatsApp`}
+        title={`Chat on WhatsApp (${phone})`}
       >
         {/* Soft pulsing aura animation around the circular icon */}
         <span className="absolute -inset-1 rounded-full bg-emerald-400/35 animate-ping pointer-events-none" />

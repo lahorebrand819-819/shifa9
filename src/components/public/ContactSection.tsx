@@ -205,7 +205,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     rel="noopener noreferrer"
                     className="text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
                   >
-                    <span>{phone}</span>
+                    <span>{settings?.whatsappNumber ? `+${whatsappNumber}` : phone}</span>
                     <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold">
                       Instant Reply
                     </span>

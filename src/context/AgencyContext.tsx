@@ -364,7 +364,13 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
                 if (!prev) return prev;
                 return {
                   ...prev,
-                  settings: { ...prev.settings, ...payload.settings },
+                  settings: {
+                    ...prev.settings,
+                    ...payload.settings,
+                    socialLinks: payload.settings.socialLinks
+                      ? { ...payload.settings.socialLinks }
+                      : prev.settings?.socialLinks || {}
+                  },
                   ...(payload.currencies ? { currencies: payload.currencies } : {}),
                   ...(payload.policies ? { policies: payload.policies } : {})
                 };
@@ -394,7 +400,13 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
                 if (!prev) return prev;
                 return {
                   ...prev,
-                  settings: { ...prev.settings, ...payload.settings },
+                  settings: {
+                    ...prev.settings,
+                    ...payload.settings,
+                    socialLinks: payload.settings.socialLinks
+                      ? { ...payload.settings.socialLinks }
+                      : prev.settings?.socialLinks || {}
+                  },
                   ...(payload.currencies ? { currencies: payload.currencies } : {}),
                   ...(payload.policies ? { policies: payload.policies } : {}),
                   ...(payload.services ? { services: payload.services } : {}),
@@ -915,77 +927,70 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const authFetch = async (url: string, method: string, body?: any) => {
     let token = adminToken || localStorage.getItem('dga_admin_token');
     if (!token) {
-      token = `dga_auth_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      token = `dga_auth_admin_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
       localStorage.setItem('dga_admin_token', token);
       setAdminToken(token);
       setIsAuthenticated(true);
     }
-    try {
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: body ? JSON.stringify(body) : undefined
-      });
-      const contentType = res.headers.get('content-type') || '';
-      if (contentType.includes('application/json')) {
-        const json = await res.json();
-        if (!res.ok) {
-          throw new Error(json.error || 'Request failed');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+
+    const res = await fetch(url, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+      cache: 'no-store'
+    });
+
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const json = await res.json();
+      if (!res.ok) {
+        if (res.status === 401) {
+          localStorage.removeItem('dga_admin_token');
+          setAdminToken(null);
+          setIsAuthenticated(false);
+          throw new Error('Admin session expired. Please sign in again to save settings.');
         }
-        return json;
+        throw new Error(json.error || `Server error (${res.status})`);
       }
-      // On static deployment where API routes return HTML:
-      return { success: true, ...body };
-    } catch (err: any) {
-      console.warn('Backend request fallback in local mode:', err);
-      return { success: true, ...body };
+      return json;
     }
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        localStorage.removeItem('dga_admin_token');
+        setAdminToken(null);
+        setIsAuthenticated(false);
+        throw new Error('Admin session expired. Please sign in again.');
+      }
+      throw new Error(`Server returned error status ${res.status}`);
+    }
+
+    return { success: true, ...body };
   };
 
   const saveSettings = async (settings: Partial<WebsiteSettings>) => {
     try {
       setIsSavingSettings(true);
       const res = await authFetch('/api/admin/settings', 'PUT', settings);
-      const updatedSettings: WebsiteSettings = (res && res.settings) ? res.settings : {
-        ...(data?.settings || {
-          name: 'Shifa Productions',
-          agencyName: 'Shifa Productions',
-          contactEmail: 'shifaproductions.official@gmail.com',
-          email: 'shifaproductions.official@gmail.com',
-          tagline: 'Scaling High-Growth Brands Through Performance Marketing & Creative Execution',
-          logo: '/shifa-logo.png',
-          favicon: '/shifa-logo.png',
-          phone: '+92 37062 64133',
-          whatsappNumber: '923706264133',
-          whatsappMessage: "Hi Shifa Productions! I'd like to discuss a project.",
-          address: 'Suite 402, Executive Heights, Tech Avenue, Lahore & London',
-          socialLinks: {},
-          footerText: 'Transforming ambitious brands through high-impact marketing.',
-          copyrightText: '© 2026 Shifa Productions. All rights reserved.',
-          defaultCurrency: 'PKR',
-          seoTitle: 'Shifa Productions',
-          seoDescription: 'Shifa Productions Marketing Agency',
-          primaryColor: '#6366f1',
-          secondaryColor: '#a855f7',
-          themeMode: 'dark',
-          buttonStyle: 'rounded'
-        }),
-        ...settings,
-        name: settings.agencyName || settings.name || data?.settings?.name || 'Shifa Productions',
-        agencyName: settings.agencyName || settings.name || data?.settings?.agencyName || 'Shifa Productions',
-        contactEmail: settings.email || settings.contactEmail || data?.settings?.contactEmail || 'shifaproductions.official@gmail.com',
-        email: settings.email || settings.contactEmail || data?.settings?.email || 'shifaproductions.official@gmail.com'
-      };
+      if (!res || res.success === false) {
+        throw new Error(res?.error || 'Failed to save settings to central database');
+      }
+
+      const authoritativeSettings: WebsiteSettings = res.settings ? res.settings : {
+        ...(data?.settings || {}),
+        ...settings
+      } as WebsiteSettings;
 
       setData(prev => {
         if (!prev) return prev;
         return {
           ...prev,
-          settings: updatedSettings,
-          ...(res && res.currencies ? { currencies: res.currencies } : {})
+          settings: authoritativeSettings,
+          ...(res.currencies ? { currencies: res.currencies } : {})
         };
       });
 
@@ -993,6 +998,7 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       addToast('Settings saved to database & synchronized across all devices in real-time!', 'success');
       return true;
     } catch (err: any) {
+      console.error('[saveSettings Error]', err);
       addToast(err?.message || 'Failed to save settings. Please try again.', 'error');
       return false;
     } finally {
