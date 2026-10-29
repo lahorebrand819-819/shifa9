@@ -34,17 +34,33 @@ export const AdminTestimonials: React.FC = () => {
   };
 
   const handleOpenEdit = (t: TestimonialItem) => {
-    setEditingItem({ ...t });
+    setEditingItem({
+      ...t,
+      clientName: (t as any).clientName || (t as any).name || '',
+      role: (t as any).role || (t as any).position || '',
+      avatar: (t as any).avatar || (t as any).photo || ''
+    });
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingItem || !editingItem.clientName) return;
+    const finalName = (editingItem?.clientName || (editingItem as any)?.name || '').trim();
+    if (!editingItem || !finalName) return;
+
+    const payload = {
+      ...editingItem,
+      clientName: finalName,
+      name: finalName,
+      role: editingItem.role || (editingItem as any).position || 'Founder & CEO',
+      position: editingItem.role || (editingItem as any).position || 'Founder & CEO',
+      avatar: editingItem.avatar || (editingItem as any).photo || '',
+      photo: editingItem.avatar || (editingItem as any).photo || ''
+    };
 
     if (editingItem.id) {
-      await updateTestimonial(editingItem.id, editingItem);
+      await updateTestimonial(editingItem.id, payload as any);
     } else {
-      await createTestimonial(editingItem);
+      await createTestimonial(payload as any);
     }
     setEditingItem(null);
   };
@@ -99,10 +115,14 @@ export const AdminTestimonials: React.FC = () => {
               </p>
 
               <div className="flex items-center gap-3 pt-2">
-                <img src={t.avatar} alt={t.clientName} className="w-9 h-9 rounded-full object-cover" />
+                <img
+                  src={t.avatar || (t as any).photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'}
+                  alt={t.clientName || (t as any).name || 'Client'}
+                  className="w-9 h-9 rounded-full object-cover"
+                />
                 <div>
-                  <h4 className="text-xs font-bold text-white">{t.clientName}</h4>
-                  <div className="text-[10px] text-slate-400">{t.role} • {t.company}</div>
+                  <h4 className="text-xs font-bold text-white">{t.clientName || (t as any).name || 'Client'}</h4>
+                  <div className="text-[10px] text-slate-400">{(t as any).role || (t as any).position || 'Client'} • {t.company}</div>
                 </div>
               </div>
             </div>

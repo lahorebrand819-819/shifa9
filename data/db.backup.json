@@ -1,13 +1,13 @@
 {
   "settings": {
     "name": "Shifa Productions",
-    "tagline": "Scaling High-Growth Brands Through Performance Marketing & Creative Execution",
+    "tagline": "Scalable Growth for Ambitious Brands",
     "logo": "/shifa-logo.png",
     "favicon": "/shifa-logo.png",
     "contactEmail": "shifaproductions.official@gmail.com",
     "phone": "+92 37062 64133",
     "whatsappNumber": "923706264133",
-    "whatsappMessage": "Hello Shifa Productions, I am verifying cross-device sync.",
+    "whatsappMessage": "Hello Shifa Productions! I would like to book a consultation.",
     "address": "Suite 402, Executive Heights, Tech Avenue, Lahore & London",
     "socialLinks": {
       "instagram": "https://www.instagram.com/shifaproductions?stkn=dDAwbXJ0cGdqNGVu",
@@ -55,7 +55,7 @@
   "services": [
     {
       "id": "meta-ads",
-      "title": "Meta Ads",
+      "title": "Meta Ads & Creative Scaling",
       "category": "ads",
       "description": "Targeted Facebook & Instagram advertising engineered for direct-response sales, lead generation, and ROAS scaling.",
       "icon": "Megaphone",
@@ -2579,6 +2579,36 @@
   ],
   "auditLogs": [
     {
+      "id": "log_1793262279548",
+      "user": "Super Admin",
+      "action": "POLICY_CREATED",
+      "date": "2026-10-29",
+      "time": "08:24 AM",
+      "record": "Policies",
+      "changesMade": "Created policy: Client Service Guarantee (client-service-guarantee)",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "log_1793262279514",
+      "user": "Visitor Test",
+      "action": "USER_REGISTERED",
+      "date": "2026-10-29",
+      "time": "08:24 AM",
+      "record": "Users",
+      "changesMade": "Registered new account: Visitor Test (visitor_test_1793262279511@example.com)",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "log_1793261725312",
+      "user": "Visitor 1",
+      "action": "USER_REGISTERED",
+      "date": "2026-10-29",
+      "time": "08:15 AM",
+      "record": "Users",
+      "changesMade": "Registered new account: Visitor 1 (visitor1@gmail.com)",
+      "ipAddress": "127.0.0.1"
+    },
+    {
       "id": "log_1793095346049",
       "user": "Agency Director",
       "action": "GOOGLE_AUTH_SIGNIN",
@@ -2799,6 +2829,19 @@
       "displayOrder": 4,
       "isSystemDefault": true,
       "content": "## 1. What Are Cookies?\n\nCookies are compact text files stored on your computer or mobile device when you browse websites. They help websites remember your preferences, keep you authenticated, and understand how visitors interact with online content.\n\n---\n\n## 2. Categories of Cookies We Use\n\n### A. Essential Cookies\nRequired for the website to function properly. These include security session identifiers and language/currency selectors. These cookies cannot be disabled without impairing site functionality.\n\n### B. Analytics & Performance Cookies\nHelp us analyze visitor traffic, page load performance, and referral sources. We utilize Google Analytics 4 with IP anonymization to evaluate aggregate engagement metrics.\n\n### C. Advertising & Conversion Pixels\nWe place marketing pixels (e.g. Meta Pixel, Google Tag Manager, LinkedIn Insight Tag) to gauge the effectiveness of our paid advertisements and present relevant digital marketing case studies to interested businesses.\n\n---\n\n## 3. Managing Your Cookie Preferences\n\nYou can modify your browser settings to decline cookies or receive notifications when a cookie is placed:\n- **Chrome:** Settings > Privacy and Security > Cookies and other site data\n- **Safari:** Preferences > Privacy > Block all cookies\n- **Firefox:** Settings > Privacy & Security > Cookies and Site Data\n\nPlease note that blocking essential cookies may affect the visual display and functionality of certain interactive features."
+    },
+    {
+      "id": "pol_1793262279548_jq90",
+      "title": "Client Service Guarantee",
+      "slug": "client-service-guarantee",
+      "category": "legal",
+      "summary": "Our 100% transparent agency delivery guarantee.",
+      "content": "## Delivery Guarantee\nWe prioritize performance, transparency, and high ROI for every partner.",
+      "effectiveDate": "2026-10-29",
+      "lastUpdated": "2026-10-29",
+      "status": "published",
+      "displayOrder": 5,
+      "isSystemDefault": false
     }
   ],
   "subscribers": [
@@ -2818,6 +2861,26 @@
     }
   ],
   "users": [
+    {
+      "id": "usr_1793262279514_ntz3x",
+      "name": "Visitor Test",
+      "email": "visitor_test_1793262279511@example.com",
+      "username": "visitor_test_1793262279511",
+      "passwordHash": "password123",
+      "company": "",
+      "role": "client",
+      "createdAt": "2026-10-29T08:24:39.514Z"
+    },
+    {
+      "id": "usr_1793261725311_bqioq",
+      "name": "Visitor 1",
+      "email": "visitor1@gmail.com",
+      "username": "visitor1",
+      "passwordHash": "password123",
+      "company": "",
+      "role": "client",
+      "createdAt": "2026-10-29T08:15:25.311Z"
+    },
     {
       "id": "usr_owner_1",
       "name": "Shifa Productions Owner",

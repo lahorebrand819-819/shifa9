@@ -11,7 +11,8 @@ import {
   Clock,
   ShieldCheck,
   Loader2,
-  ArrowRight
+  ArrowRight,
+  Linkedin
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GoogleIcon } from '../common/GoogleIcon';
@@ -224,6 +225,26 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   </div>
                 </div>
               </div>
+
+              {settings?.socialLinks?.linkedin && (
+                <div className="p-4 rounded-2xl bg-slate-900/80 border border-sky-500/30 flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center shrink-0">
+                    <Linkedin className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-400 font-medium">Official LinkedIn</div>
+                    <a
+                      href={settings.socialLinks.linkedin.startsWith('http') ? settings.socialLinks.linkedin : `https://${settings.socialLinks.linkedin}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-bold text-sky-400 hover:text-sky-300 transition-colors flex items-center gap-1.5"
+                    >
+                      <span>Connect on LinkedIn</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* SLA Badge */}

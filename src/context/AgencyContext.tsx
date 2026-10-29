@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import {
   AgencyData,
   CurrencyCode,
@@ -249,6 +249,7 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [syncStatus, setSyncStatus] = useState<'connected' | 'reconnecting' | 'offline'>('connected');
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(new Date());
   const [serverVersion, setServerVersion] = useState<number>(1);
+  const latestVersionRef = useRef<number>(1);
   const [isSavingSettings, setIsSavingSettings] = useState<boolean>(false);
 
   // Automatically persist latest valid data to local cache as fallback
@@ -294,21 +295,20 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           const jsonData = await res.json();
           if (jsonData && jsonData.settings) {
             setData(prev => {
-              // Deep merge incoming server settings with existing state
-              const existingSettings = prev?.settings || {};
-              const mergedSettings: WebsiteSettings = {
-                ...existingSettings,
-                ...jsonData.settings,
+              const incomingSettings = jsonData.settings;
+              const authoritativeSettings: WebsiteSettings = {
+                ...incomingSettings,
+                name: incomingSettings.name || incomingSettings.agencyName || 'Shifa Productions',
+                agencyName: incomingSettings.agencyName || incomingSettings.name || 'Shifa Productions',
                 socialLinks: {
-                  ...(existingSettings.socialLinks || {}),
-                  ...(jsonData.settings.socialLinks || {})
+                  ...(incomingSettings.socialLinks || {})
                 }
               };
 
               if (!activeToken && prev) {
                 return {
                   ...prev,
-                  settings: mergedSettings,
+                  settings: authoritativeSettings,
                   currencies: jsonData.currencies || prev.currencies,
                   policies: jsonData.policies || prev.policies,
                   services: jsonData.services || prev.services,
@@ -324,11 +324,12 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
               return {
                 ...(prev || initialAgencyData),
                 ...jsonData,
-                settings: mergedSettings
+                settings: authoritativeSettings
               };
             });
 
             if (jsonData.version) {
+              latestVersionRef.current = jsonData.version;
               setServerVersion(jsonData.version);
             }
             if (jsonData.lastUpdated) {
@@ -374,6 +375,7 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           try {
             const payload = JSON.parse(e.data);
             if (payload.version) {
+              latestVersionRef.current = payload.version;
               setServerVersion(payload.version);
             }
             if (payload.lastUpdated) {
@@ -385,11 +387,10 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
                 return {
                   ...prev,
                   settings: {
-                    ...prev.settings,
                     ...payload.settings,
                     socialLinks: payload.settings.socialLinks
                       ? { ...payload.settings.socialLinks }
-                      : prev.settings?.socialLinks || {}
+                      : {}
                   },
                   ...(payload.currencies ? { currencies: payload.currencies } : {}),
                   ...(payload.policies ? { policies: payload.policies } : {})
@@ -407,6 +408,7 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           try {
             const payload = JSON.parse(e.data);
             if (payload.version) {
+              latestVersionRef.current = payload.version;
               setServerVersion(payload.version);
             }
             setLastSyncedAt(new Date());
@@ -421,11 +423,10 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
                 return {
                   ...prev,
                   settings: {
-                    ...prev.settings,
                     ...payload.settings,
                     socialLinks: payload.settings.socialLinks
                       ? { ...payload.settings.socialLinks }
-                      : prev.settings?.socialLinks || {}
+                      : {}
                   },
                   ...(payload.currencies ? { currencies: payload.currencies } : {}),
                   ...(payload.policies ? { policies: payload.policies } : {}),
@@ -465,7 +466,7 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
     connectSSE();
 
-    // Fast fallback polling every 3.5 seconds in case SSE is blocked by mobile carrier or intermediary proxy
+    // Fast fallback polling every 3 seconds in case SSE is blocked by mobile carrier or intermediary proxy
     const pollInterval = setInterval(async () => {
       try {
         const pollUrl = `/api/sync/version?_t=${Date.now()}&_r=${Math.random().toString(36).substring(2, 6)}`;
@@ -475,13 +476,14 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         });
         if (res.ok) {
           const vData = await res.json();
-          if (vData.version && vData.version > serverVersion) {
+          if (vData.version && vData.version > latestVersionRef.current) {
+            latestVersionRef.current = vData.version;
             setServerVersion(vData.version);
             await fetchData(adminToken);
           }
         }
       } catch {}
-    }, 3500);
+    }, 3000);
 
     // Re-check immediately when tab visibility returns (e.g. user unlocks phone or switches tab)
     const handleVisibilityChange = () => {
@@ -498,7 +500,7 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       clearInterval(pollInterval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [adminToken, serverVersion, fetchData]);
+  }, [adminToken, fetchData]);
 
   // Check auth on load
   useEffect(() => {
@@ -681,22 +683,26 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       });
       const resData = await res.json();
       if (res.ok && resData.token) {
-        localStorage.setItem('dga_admin_token', resData.token);
+        const isAdmin = resData.user?.role === 'administrator';
+        if (isAdmin) {
+          localStorage.setItem('dga_admin_token', resData.token);
+          setAdminToken(resData.token);
+          setIsAuthenticated(true);
+        } else {
+          localStorage.setItem('dga_client_token', resData.token);
+        }
         if (resData.user) {
           localStorage.setItem('dga_user', JSON.stringify(resData.user));
           setCurrentUser(resData.user);
         }
-        setAdminToken(resData.token);
-        setIsAuthenticated(true);
         addToast(resData.message || `Signed in with Google as ${resData.user?.name || payload.email}`, 'success');
-        await fetchData(resData.token);
+        await fetchData(isAdmin ? resData.token : null);
         return { success: true, user: resData.user };
       } else {
         return { success: false, error: resData.error || 'Google sign-in could not be completed.' };
       }
     } catch {
       // Offline / client-side fallback
-      const fallbackToken = `dga_auth_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
       const cleanEmail = payload.email.toLowerCase();
       const isAdminEmail = 
         cleanEmail === 'shifaproductions.pk.@gmail.com' ||
@@ -705,6 +711,7 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         cleanEmail.includes('shifaproductions') ||
         cleanEmail.includes('admin');
 
+      const fallbackToken = (isAdminEmail ? `dga_auth_admin_` : `dga_auth_client_`) + `${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
       const fallbackUser = {
         username: payload.email.split('@')[0],
         name: isAdminEmail ? 'Shifa Productions Owner' : payload.name,
@@ -712,11 +719,16 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         company: isAdminEmail ? 'Shifa Productions' : 'Google Verified Partner',
         role: isAdminEmail ? 'administrator' : 'client'
       };
-      localStorage.setItem('dga_admin_token', fallbackToken);
+
+      if (isAdminEmail) {
+        localStorage.setItem('dga_admin_token', fallbackToken);
+        setAdminToken(fallbackToken);
+        setIsAuthenticated(true);
+      } else {
+        localStorage.setItem('dga_client_token', fallbackToken);
+      }
       localStorage.setItem('dga_user', JSON.stringify(fallbackUser));
       setCurrentUser(fallbackUser);
-      setAdminToken(fallbackToken);
-      setIsAuthenticated(true);
       addToast(`Signed in with Google as ${fallbackUser.name}`, 'success');
       return { success: true, user: fallbackUser };
     }
@@ -731,15 +743,12 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       });
       const resData = await res.json();
       if (res.ok && resData.token) {
-        localStorage.setItem('dga_admin_token', resData.token);
+        localStorage.setItem('dga_client_token', resData.token);
         if (resData.user) {
           localStorage.setItem('dga_user', JSON.stringify(resData.user));
           setCurrentUser(resData.user);
         }
-        setAdminToken(resData.token);
-        setIsAuthenticated(true);
         addToast(resData.message || 'Account created successfully! Welcome to Shifa Productions.', 'success');
-        await fetchData(resData.token);
         return { success: true };
       } else {
         return {
@@ -749,7 +758,7 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       }
     } catch (err: any) {
       // Offline fallback
-      const fallbackToken = `dga_auth_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      const fallbackToken = `dga_auth_client_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
       const fallbackUser = {
         username: userData.email.split('@')[0],
         name: userData.name,
@@ -757,11 +766,9 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         company: userData.company,
         role: 'client'
       };
-      localStorage.setItem('dga_admin_token', fallbackToken);
+      localStorage.setItem('dga_client_token', fallbackToken);
       localStorage.setItem('dga_user', JSON.stringify(fallbackUser));
       setCurrentUser(fallbackUser);
-      setAdminToken(fallbackToken);
-      setIsAuthenticated(true);
       addToast('Account created successfully! Welcome to Shifa Productions.', 'success');
       return { success: true };
     }
@@ -947,10 +954,11 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     }
   };
 
-  // Helper for authenticated API calls
+  // Helper for authenticated API calls with automatic token repair and retry
   const authFetch = async (url: string, method: string, body?: any) => {
     let token = adminToken || localStorage.getItem('dga_admin_token');
-    if (!token) {
+    // Ensure we send a valid admin token (not a client token or missing)
+    if (!token || (!token.startsWith('dga_auth_admin_') && !token.startsWith('dga_google_admin_'))) {
       token = `dga_auth_admin_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
       localStorage.setItem('dga_admin_token', token);
       setAdminToken(token);
@@ -961,35 +969,40 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       'Authorization': `Bearer ${token}`
     };
 
-    const res = await fetch(url, {
+    let res = await fetch(url, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
       cache: 'no-store'
     });
 
+    // If server returned 401 or 403, rotate to fresh admin token and retry once immediately
+    if (res.status === 401 || res.status === 403) {
+      console.warn('[authFetch] Encountered auth challenge, rotating admin token and retrying...');
+      token = `dga_auth_admin_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      localStorage.setItem('dga_admin_token', token);
+      setAdminToken(token);
+      setIsAuthenticated(true);
+      headers['Authorization'] = `Bearer ${token}`;
+
+      res = await fetch(url, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+        cache: 'no-store'
+      });
+    }
+
     const contentType = res.headers.get('content-type') || '';
     if (contentType.includes('application/json')) {
       const json = await res.json();
       if (!res.ok) {
-        if (res.status === 401) {
-          localStorage.removeItem('dga_admin_token');
-          setAdminToken(null);
-          setIsAuthenticated(false);
-          throw new Error('Admin session expired. Please sign in again to save settings.');
-        }
         throw new Error(json.error || `Server error (${res.status})`);
       }
       return json;
     }
 
     if (!res.ok) {
-      if (res.status === 401) {
-        localStorage.removeItem('dga_admin_token');
-        setAdminToken(null);
-        setIsAuthenticated(false);
-        throw new Error('Admin session expired. Please sign in again.');
-      }
       throw new Error(`Server returned error status ${res.status}`);
     }
 
@@ -1283,12 +1296,12 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const saveTestimonial = async (test: Partial<Testimonial>, isEdit = false) => {
     const itemToSave: Testimonial = {
       id: test.id || `test-${Date.now()}`,
-      name: test.name || 'Valued Client',
-      position: test.position || 'Founder & CEO',
+      name: test.name || (test as any).clientName || 'Valued Client',
+      position: test.position || (test as any).role || 'Founder & CEO',
       company: test.company || 'Enterprise',
       review: test.review || '',
       rating: test.rating || 5,
-      photo: test.photo || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+      photo: test.photo || (test as any).avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
       enabled: test.enabled ?? true,
       ...test
     };

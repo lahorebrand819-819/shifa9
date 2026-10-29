@@ -60,10 +60,18 @@ export const AdminBlog: React.FC = () => {
     e.preventDefault();
     if (!editingPost || !editingPost.title) return;
 
+    const authorName = typeof editingPost.author === 'object' ? (editingPost.author as any)?.name : (editingPost.author || 'Agency Team');
+    const authorRole = typeof editingPost.author === 'object' ? (editingPost.author as any)?.role : ((editingPost as any).authorRole || 'Strategist');
+    const authorPhoto = typeof editingPost.author === 'object' ? (editingPost.author as any)?.avatar : ((editingPost as any).authorPhoto || '');
     const tagsArray = tagsInput.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean);
 
     const payload: Partial<BlogPost> = {
       ...editingPost,
+      author: authorName,
+      authorRole,
+      authorPhoto,
+      publishDate: (editingPost as any).publishedDate || (editingPost as any).publishDate || new Date().toISOString().split('T')[0],
+      isDraft: editingPost.isDraft !== undefined ? editingPost.isDraft : !(editingPost as any).published,
       slug: editingPost.slug || editingPost.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       tags: tagsArray
     };
