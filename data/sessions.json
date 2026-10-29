@@ -9,5 +9,27 @@
       "role": "administrator"
     },
     "createdAt": "2026-10-28T14:13:38.933Z"
+  },
+  {
+    "token": "dga_auth_admin_1793260800242_byhtopqym08",
+    "user": {
+      "username": "shifaproductions.pk.@gmail.com",
+      "name": "Shifa Productions Owner",
+      "email": "shifaproductions.pk.@gmail.com",
+      "company": "Shifa Productions",
+      "role": "administrator"
+    },
+    "createdAt": "2026-10-29T08:00:00.242Z"
+  },
+  {
+    "token": "dga_auth_admin_test",
+    "user": {
+      "username": "shifaproductions.pk.@gmail.com",
+      "name": "Agency Admin",
+      "email": "shifaproductions.pk.@gmail.com",
+      "company": "Shifa Productions",
+      "role": "administrator"
+    },
+    "createdAt": "2026-10-29T08:00:13.374Z"
   }
 ]

@@ -146,7 +146,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
   const contactEmail = settings?.contactEmail || settings?.email || 'shifaproductions.official@gmail.com';
   const phone = settings?.phone || '+92 37062 64133';
   const address = settings?.address || 'Suite 402, Executive Heights, Tech Avenue, Lahore & London';
-  const whatsappNumber = (settings?.whatsappNumber || '923706264133').replace(/[^0-9]/g, '');
+  const whatsappNumber = (settings?.whatsappNumber || '923706264133').replace(/[^0-9]/g, '') || '923706264133';
   const directWhatsAppUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
     `Hi ${agencyName}, I just submitted an inquiry for ${formData.service || 'marketing services'}. Looking forward to discussing next steps!`
   )}`;

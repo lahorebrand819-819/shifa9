@@ -170,10 +170,10 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  // SSE Keep-Alive Heartbeat every 25 seconds
+  // SSE Keep-Alive Heartbeat every 15 seconds for resilient mobile connections
   setInterval(() => {
     sendSSEHeartbeat();
-  }, 25000);
+  }, 15000);
 
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -266,6 +266,9 @@ async function startServer() {
   });
 
   app.get('/api/sync/version', (req: Request, res: Response) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     res.json(getCurrentVersion());
   });
 

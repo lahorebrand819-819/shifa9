@@ -37,8 +37,10 @@ export const AdminSettings: React.FC = () => {
     lastSyncedAt,
     serverVersion,
     isSavingSettings,
-    broadcastSyncTest
+    broadcastSyncTest,
+    refreshData
   } = useAgency();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const currentSettings = data?.settings;
   const policiesCount = data?.policies?.length || 0;
 
@@ -209,6 +211,22 @@ export const AdminSettings: React.FC = () => {
               </span>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={async () => {
+              setIsRefreshing(true);
+              await refreshData();
+              setIsRefreshing(false);
+              showToast('Refreshed latest data directly from central database!', 'success');
+            }}
+            disabled={isRefreshing}
+            title="Force refresh latest data directly from database"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-slate-400 ${isRefreshing ? 'animate-spin text-indigo-400' : ''}`} />
+            <span className="hidden sm:inline">Force Refresh</span>
+          </button>
 
           <button
             type="button"

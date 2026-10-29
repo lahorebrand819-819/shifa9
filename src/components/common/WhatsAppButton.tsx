@@ -11,9 +11,9 @@ export const WhatsAppButton: React.FC = () => {
     setMounted(true);
   }, []);
 
-  const phone = data?.settings?.whatsappNumber || '923706264133';
-  const cleanPhone = phone.replace(/[^0-9]/g, '');
-  const message = data?.settings?.whatsappMessage || "Hi Shifa Productions! I'd like to discuss a project.";
+  const rawPhone = data?.settings?.whatsappNumber?.trim() || '923706264133';
+  const cleanPhone = rawPhone.replace(/[^0-9]/g, '') || '923706264133';
+  const message = data?.settings?.whatsappMessage?.trim() || "Hi Shifa Productions! I'd like to discuss a project.";
 
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 
@@ -37,7 +37,7 @@ export const WhatsAppButton: React.FC = () => {
         whileTap={{ scale: 0.92 }}
         className="relative group flex items-center justify-center w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#20ba59] active:bg-[#1da850] text-white shadow-2xl shadow-emerald-500/40 border-2 border-white/20 transition-all duration-300 cursor-pointer"
         aria-label={`Chat with ${data?.settings?.agencyName || data?.settings?.name || 'Shifa Productions'} on WhatsApp`}
-        title={`Chat on WhatsApp (${phone})`}
+        title={`Chat on WhatsApp (+${cleanPhone})`}
       >
         {/* Soft pulsing aura animation around the circular icon */}
         <span className="absolute -inset-1 rounded-full bg-emerald-400/35 animate-ping pointer-events-none" />

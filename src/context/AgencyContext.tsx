@@ -270,18 +270,23 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
-  // Fetch centralized data from persistent database
+  // Fetch centralized data from persistent database with guaranteed cache-busting
   const fetchData = useCallback(async (token?: string | null) => {
     const activeToken = token !== undefined ? token : adminToken;
     const endpoint = activeToken ? '/api/admin/data' : '/api/data';
-    const headers: Record<string, string> = {};
+    const headers: Record<string, string> = {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    };
     if (activeToken) {
       headers['Authorization'] = `Bearer ${activeToken}`;
     }
 
     try {
       setIsLoading(true);
-      const res = await fetch(endpoint, { headers });
+      const cacheBustUrl = `${endpoint}?_t=${Date.now()}&_r=${Math.random().toString(36).substring(2, 7)}`;
+      const res = await fetch(cacheBustUrl, { headers, cache: 'no-store' });
       const contentType = res.headers.get('content-type') || '';
 
       if (contentType.includes('application/json')) {
@@ -289,11 +294,21 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           const jsonData = await res.json();
           if (jsonData && jsonData.settings) {
             setData(prev => {
-              // If public endpoint was queried, merge into existing structure
+              // Deep merge incoming server settings with existing state
+              const existingSettings = prev?.settings || {};
+              const mergedSettings: WebsiteSettings = {
+                ...existingSettings,
+                ...jsonData.settings,
+                socialLinks: {
+                  ...(existingSettings.socialLinks || {}),
+                  ...(jsonData.settings.socialLinks || {})
+                }
+              };
+
               if (!activeToken && prev) {
                 return {
                   ...prev,
-                  settings: jsonData.settings,
+                  settings: mergedSettings,
                   currencies: jsonData.currencies || prev.currencies,
                   policies: jsonData.policies || prev.policies,
                   services: jsonData.services || prev.services,
@@ -306,8 +321,13 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
                   team: jsonData.team || prev.team
                 };
               }
-              return jsonData;
+              return {
+                ...(prev || initialAgencyData),
+                ...jsonData,
+                settings: mergedSettings
+              };
             });
+
             if (jsonData.version) {
               setServerVersion(jsonData.version);
             }
@@ -445,19 +465,23 @@ export const AgencyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
     connectSSE();
 
-    // Fallback polling every 12 seconds in case SSE is blocked by client network
+    // Fast fallback polling every 3.5 seconds in case SSE is blocked by mobile carrier or intermediary proxy
     const pollInterval = setInterval(async () => {
       try {
-        const res = await fetch('/api/sync/version');
+        const pollUrl = `/api/sync/version?_t=${Date.now()}&_r=${Math.random().toString(36).substring(2, 6)}`;
+        const res = await fetch(pollUrl, {
+          headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' },
+          cache: 'no-store'
+        });
         if (res.ok) {
           const vData = await res.json();
           if (vData.version && vData.version > serverVersion) {
             setServerVersion(vData.version);
-            fetchData(adminToken);
+            await fetchData(adminToken);
           }
         }
       } catch {}
-    }, 12000);
+    }, 3500);
 
     // Re-check immediately when tab visibility returns (e.g. user unlocks phone or switches tab)
     const handleVisibilityChange = () => {

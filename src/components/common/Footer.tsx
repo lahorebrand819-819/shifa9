@@ -25,6 +25,13 @@ interface FooterProps {
   onOpenAdminSettings?: () => void;
 }
 
+const toExternalUrl = (url?: string) => {
+  if (!url || !url.trim()) return '';
+  const trimmed = url.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+};
+
 export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin, onOpenAdminSettings }) => {
   const { data } = useAgency();
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyItem | null>(null);
@@ -76,7 +83,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin, onOpenA
             <div className="flex items-center gap-2.5 pt-2">
               {social.instagram && (
                 <a
-                  href={social.instagram}
+                  href={toExternalUrl(social.instagram)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-800 text-slate-400 hover:text-pink-400 flex items-center justify-center transition-all"
@@ -87,7 +94,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin, onOpenA
               )}
               {social.facebook && (
                 <a
-                  href={social.facebook}
+                  href={toExternalUrl(social.facebook)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-800 text-slate-400 hover:text-blue-400 flex items-center justify-center transition-all"
@@ -98,7 +105,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin, onOpenA
               )}
               {social.linkedin && (
                 <a
-                  href={social.linkedin}
+                  href={toExternalUrl(social.linkedin)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-800 text-slate-400 hover:text-sky-400 flex items-center justify-center transition-all"
@@ -109,7 +116,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin, onOpenA
               )}
               {social.youtube && (
                 <a
-                  href={social.youtube}
+                  href={toExternalUrl(social.youtube)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-800 text-slate-400 hover:text-red-400 flex items-center justify-center transition-all"
@@ -120,7 +127,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin, onOpenA
               )}
               {social.twitter && (
                 <a
-                  href={social.twitter}
+                  href={toExternalUrl(social.twitter)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-800 text-slate-400 hover:text-cyan-400 flex items-center justify-center transition-all"
